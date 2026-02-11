@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+	<meta charset="UTF-8" />
+	<title>File Line Consumer Example</title>
+</head>
+
+<script type="text/javascript" th:src="@{/js/egovframework/jquery-3.6.1.min.js}"></script>
+
+<script type="text/javascript">
+
+	var wsocket;
+	var totalByteSize = 0;
+	var totalRowCount = 0;
+
+	$(document).ready(function() {
+
+		//wsocket = new WebSocket("ws://localhost:9000/echo-ws");
+		var serverUrl = $("#serverUrl").val();
+		appendLog("Call Websocket URL : " + serverUrl);
+		wsocket = new WebSocket(serverUrl);
+		wsocket.onmessage = onMessage;
+		wsocket.onclose = onClose;
+
+		wsocket.onopen = function() {
+			$('#sendBtn').click(function() { sendMessage(); });
+			appendLog("Websocket open was successful!");
+			//showLoadingBar();
+			//setTimeout(hideLoadingBar, 300);
+		};
+
+	});
+	
+	function sendMessage() {
+		wsocket.send( $("#message").val() );
+	}
+	
+	function onMessage(evt) {
+		var data = evt.data;
+		console.log("Receive Echo Data : " + data);
+		const obj = JSON.parse(data);
+		showLoadingBar();
+		setTimeout(hideLoadingBar, 500);
+		
+		//console.log("socket data = "+data);
+		var resultInfo = "";
+		if (totalRowCount > 0) resultInfo += "\n";
+		let today = new Date();
+		resultInfo += `Client Date : ${today.toLocaleDateString('ko-KR')} ${today.toLocaleTimeString()}\n`;
+		resultInfo += obj.lineData;
+		
+		console.log("socket lineData = "+obj.lineData);
+		totalByteSize += getByteLengthOfString(obj.lineData);
+		totalRowCount += obj.lineData.split("\n").length;
+		
+		console.log("totalByteSize = "+totalByteSize);
+		console.log("totalRowCount = "+totalRowCount);
+		$('#byteSize').val(totalByteSize);
+		$('#rowCount').val(totalRowCount);
+		
+		const $textarea = $('#resultLine');
+	    $textarea.append(resultInfo);
+	    $textarea.animate({scrollTop: $textarea[0].scrollHeight});
+	    //$textarea.scrollTop($textarea[0].scrollHeight);
+		//$('#rowCount').val(totalRowCount);
+		
+		//dataTemp.setValue(0, 1, obj.temp);
+		//chartTemp.draw(dataTemp, optionsTemp);
+		
+		//wsocket.close();
+	}
+	
+	function onClose(evt) {
+		appendLog("Websocket Closed !!!");
+	}
+
+	function appendLog(msg) {
+		const $textarea = $('#resultLine');
+		$textarea.append(msg + "\n");
+		$textarea.animate({scrollTop: $textarea[0].scrollHeight});
+	}
+
+	const getByteLengthOfString = function(s,b,i,c){
+	    for(b=i=0;c=s.charCodeAt(i++);b+=c>>11?3:c>>7?2:1);
+	    return b;
+	};
+	
+	function showLoadingBar() {
+	    var maskHeight = $(document).height();
+	    var maskWidth = window.document.body.clientWidth;
+
+	    var mask = "<div id='mask' style='position:absolute; z-index:9000; background-color:#000000; display:none; left:0; top:0;'></div>";
+	    var loadingImg = '';
+
+	    loadingImg += "<div id='loadingImg' style='position:absolute; left:50%; top:40%; display:none; z-index:10000;'>";
+	    loadingImg += "    <img src='./images/egovframework/stream/loading_bar.gif'/>";
+	    loadingImg += "</div>";
+
+	    $('body').append(mask).append(loadingImg);
+
+	    $('#mask').css({
+	        'width' : maskWidth
+	        , 'height': maskHeight
+	        , 'opacity' : '0.3'
+	    });
+
+	    $('#mask').show();
+	    $('#loadingImg').show();
+	}
+	
+	function hideLoadingBar() {
+	    $('#mask, #loadingImg').hide();
+	    $('#mask, #loadingImg').remove();
+	}
+	
+</script>
+</head>
+<body>
+
+	Websocket Server URL : <input type="text" id="serverUrl" th:value="${websocketUrl}" style="width:400px"><br>
+	<br>
+	<b>* Total Stream Data</b><br>
+	Row Count : <input type="text" id="rowCount" value="0" readonly style="width:150px"><br>
+	Byte Size : <input type="text" id="byteSize" value="0" readonly style="width:150px"><br>
+	<br>
+    <textarea id="resultLine" style="width:800px; height:500px; font-family:monospace; font-size:13px;"></textarea>
+    
+</body>
+</html>

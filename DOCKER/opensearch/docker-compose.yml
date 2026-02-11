@@ -1,0 +1,67 @@
+services:
+  opensearch:
+    image: opensearchproject/opensearch:2.15.0
+    container_name: opensearch
+    environment:
+      - cluster.name=opensearch-cluster
+      - node.name=opensearch
+      - discovery.seed_hosts=opensearch
+      - cluster.initial_master_nodes=opensearch
+      - bootstrap.memory_lock=true # along with the memlock settings below, disables swapping
+      - "OPENSEARCH_JAVA_OPTS=-Xms512m -Xmx512m" # minimum and maximum Java heap size, recommend setting both to 50% of system RAM
+      # OpenSearch 2.12+ 보안 플러그인 초기 admin 패스워드 설정 (개발/테스트용 예시)
+      - OPENSEARCH_INITIAL_ADMIN_PASSWORD=Egov2015!
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+      nofile:
+        soft: 65536 # maximum number of open files for the OpenSearch user, set to at least 65536 on modern systems
+        hard: 65536
+    volumes:
+      - opensearch-data:/usr/share/opensearch/data
+    ports:
+      - 9200:9200
+      - 9600:9600 # required for Performance Analyzer
+    networks:
+      - egov-network
+  openlogstash:
+    container_name: openlogstash
+    # 이미지는 Logstash OSS 버전 기준. 7.16.2 = 마지막 공식 태그, output 플러그인 2.0+ 로 OpenSearch 2.x 호환
+    image: opensearchproject/logstash-oss-with-opensearch-output-plugin:7.16.2
+    restart: always
+    ports:
+      - "5001:5001"
+    environment:
+      LS_JAVA_OPTS: "-Xmx256m -Xms256m"
+      TZ: Asia/Seoul
+    volumes:
+      - type: bind
+        source: ${PWD}/logstash/config/logstash.yml
+        target: /usr/share/logstash/config/logstash.yml
+        read_only: true
+      - type: bind
+        source: ${PWD}/logstash/pipeline
+        target: /usr/share/logstash/pipeline
+        read_only: true
+    networks:
+      - egov-network
+  opensearch-dashboards:
+    image: opensearchproject/opensearch-dashboards:2.15.0
+    container_name: opensearch-dashboards
+    ports:
+      - 5601:5601
+    expose:
+      - "5601"
+    environment:
+      OPENSEARCH_HOSTS: '["https://opensearch:9200"]'
+    networks:
+      - egov-network
+
+volumes:
+  opensearch-data:
+
+networks:
+  egov-network:
+    name: egov-network
+    driver: bridge

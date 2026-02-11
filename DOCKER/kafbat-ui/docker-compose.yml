@@ -1,0 +1,24 @@
+# compose 파일 (Compose V2, version 필드 제거)
+services:
+  # 서비스 명
+  kafka-ui:
+    networks:
+      - kafka-network
+    # 사용할 이미지 (Kafbat UI, Kafka 4.x KRaft 호환)
+    # GitHub Container Registry의 공식 이미지 사용, 최신 안정 릴리스 태그
+    image: ghcr.io/kafbat/kafka-ui:v1.4.2
+    # 컨테이너명 설정
+    container_name: kafka-ui
+    # 접근 포트 설정 (컨테이너 외부:컨테이너 내부)  
+    ports:
+      - "9980:8080"
+    # 환경 변수 설정
+    environment:
+      - KAFKA_CLUSTERS_0_NAME=local
+      - KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS=kafka:9092
+      # Kafka 4.x KRaft 모드에서는 Zookeeper 미사용
+      #- KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS=192.168.100.40:9092
+networks:
+  kafka-network:
+    external: true
+    name: kafka-network

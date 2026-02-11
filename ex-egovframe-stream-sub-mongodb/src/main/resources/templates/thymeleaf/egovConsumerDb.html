@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+	<meta charset="UTF-8" />
+	<title>DB Consumer Example</title>
+</head>
+
+<script type="text/javascript" th:src="@{/js/egovframework/jquery-3.6.1.min.js}"></script>
+<script type="text/javascript" th:src="@{/js/egovframework/chart.min.js}"></script>
+
+<script type="text/javascript">
+
+	var wsocket;
+	var sumValue = 0;
+	var averageValue = 0;
+	var dbCount = 0;
+	var rowCount = 0;
+	var byteSize = 0;
+
+	$(document).ready(function() {
+
+		//wsocket = new WebSocket("ws://localhost:9000/echo-ws");
+		var serverUrl = $("#serverUrl").val();
+		appendLog("Call Websocket URL : " + serverUrl);
+		wsocket = new WebSocket(serverUrl);
+		wsocket.onmessage = onMessage;
+		wsocket.onclose = onClose;
+
+		wsocket.onopen = function() {
+			$('#sendBtn').click(function() { sendMessage(); });
+			appendLog("Websocket open was successful!");
+		};
+		
+		initChart();
+
+	});
+	
+	function sendMessage() {
+		wsocket.send( $("#message").val() );
+	}
+	
+	function onMessage(evt) {
+		var data = evt.data;
+		const obj = JSON.parse(data);
+		console.log("Receive Echo Data : " + data);
+
+		rowCount++;
+		byteSize += new Blob([data]).size;
+		$("#rowCount").val(rowCount);
+		$("#byteSize").val(byteSize);
+
+		var now = new Date();
+		var dateStr = now.toLocaleString('ko-KR');
+		appendLog("Client Date : " + dateStr);
+		appendLog("  category=" + obj.category + ", elapsedMills=" + obj.elapsedMills + "ms");
+
+		switch (obj.category) {
+			case "list":
+				$("#searchCount").val(Number($("#searchCount").val())+1);
+				break;
+			case "view":
+				$("#viewCount").val(Number($("#viewCount").val())+1);
+				break;
+			case "change":
+				$("#changeCount").val(Number($("#changeCount").val())+1);
+				break;
+		}
+		dbCount++;
+		sumValue += obj.elapsedMills;
+		averageValue = Math.round(sumValue / dbCount);
+		
+		updateChart(obj.elapsedMills, averageValue);
+	}
+	
+	function onClose(evt) {
+		appendLog("Websocket Closed !!!");
+	}
+
+	function appendLog(msg) {
+		var logArea = document.getElementById("logArea");
+		logArea.value += msg + "\n";
+		logArea.scrollTop = logArea.scrollHeight;
+	}
+
+	const labels = Array.from({length: 50}, (v,i) => ""+(++i));;
+
+	const options = {
+			scales: {
+	            y: {
+	                beginAtZero: true
+	            }
+	        },
+	        responsive: true,
+		    plugins: {
+		      legend: {
+		        position: 'top',
+		      },
+		      title: {
+		        display: true,
+		        text: 'DB Throughput time Line Chart'
+		      }
+		    }
+		  };
+
+	const data = {
+	  labels: labels,
+	  datasets: [
+	    {
+	      label: 'Throughput time',
+	      data: [12, 19, 3, 5, 2, 3],
+	      borderColor: 'rgba(255, 99, 132, 1)',
+	      backgroundColor: 'rgba(255, 99, 132, 0.2)',
+	    },
+	    {
+	      label: 'Average time',
+	      data: [5, 8, 7, 3, 4, 5],
+	      borderColor: 'rgba(73, 52, 235, 1)',
+	      backgroundColor: 'rgba(73, 52, 235, 0.2)',
+		}
+	  ]
+	};
+
+	const config = {
+			  type: 'line',
+			  data: data,
+			  options: options,
+			};
+
+	var dbChart;
+
+	const initChart = () => {
+		const ctx = document.getElementById('dbChart').getContext('2d');
+		dbChart= new Chart(ctx, config);
+	}
+
+	const updateChart = (data, averageValue) => {
+		//myChart.data.datasets[0].data = [1,2,3,4,5,6,7,8,9,10,11,12,13];
+		dbChart.data.datasets[0].data.push(data);
+		dbChart.data.datasets[1].data.push(averageValue);
+		if (dbChart.data.datasets[0].data.length > 50) {
+			dbChart.data.datasets[0].data.shift();
+			dbChart.data.datasets[1].data.shift();
+		}
+		dbChart.update();
+	}
+	
+</script>
+</head>
+<body>
+
+	Websocket Server URL : <input type="text" id="serverUrl" th:value="${websocketUrl}" style="width:400px"><br>
+	<br>
+	<b>* Total Stream Data</b><br>
+	Row Count : <input type="text" id="rowCount" value="0" readonly style="width:150px"><br>
+	Byte Size : <input type="text" id="byteSize" value="0" readonly style="width:150px"><br>
+	<br>
+	<b>* 특성별 조회이력 건수(Number of inquiry history by characteristic)</b><br>
+	검색이력(Search history) : <input type="text" id="searchCount" value="0" readonly><br>
+	조회이력(View history) : <input type="text" id="viewCount" value="0" readonly><br>
+	변경이력(Change history) : <input type="text" id="changeCount" value="0" readonly><br>
+	<br>
+    <canvas id="dbChart" width="800" height="300"></canvas>
+    <br>
+    <textarea id="logArea" readonly style="width:800px; height:300px; font-family:monospace; font-size:13px;"></textarea>
+    
+</body>
+</html>

@@ -1,0 +1,21 @@
+services:
+  mongodb:
+    image: mongo:8.0.18
+    container_name: my-mongodb
+    networks:
+      - egov-network
+    ports:
+      - 27017:27017
+    environment:
+      - MONGO_INITDB_DATABASE=com
+      - MONGO_INITDB_ROOT_USERNAME=root
+      - MONGO_INITDB_ROOT_PASSWORD=frame001
+      - MONGO_USERNAME=com
+      - MONGO_PASSWORD=com01
+    restart: always
+    platform: linux/x86_64
+
+networks:
+  egov-network:
+    name: egov-network
+    external: true

@@ -1,0 +1,90 @@
+server:
+    port: 9001
+
+spring:
+  rabbitmq:
+    host: 192.168.100.60
+    port: 5672
+    username: guest
+    password: guest
+    virtual-host: egov
+
+  cloud:
+    stream:
+      kafka:
+        binder:
+          autoCreateTopics: true
+          autoAddPartitions: false
+          # Apache Kafka 4.x KRaft 모드에서는 Zookeeper 미사용
+          #zkNodes: 192.168.100.60
+          brokers: 192.168.100.60
+          # Kafka 클라이언트 텔레메트리 비활성화 (브로커에 메트릭 전송 안 함)
+          configuration:
+            enable.metrics.push: false
+
+      bindings:
+#        output:
+#          destination: sample-topic
+#        input:
+#          destination: sample-topic
+
+        basicProducer-out-0:
+          destination: test-topic
+          binder: kafka
+#        basicConsumer-in-0:
+#          destination: test-topic
+#          binder: kafka
+
+        lineFileProducer-out-0:
+          destination: line-topic
+          binder: kafka
+
+        trainApiProducer-out-0:
+          destination: api-topic
+          binder: kafka
+          producer:
+            poller:
+              fixed-delay: 5000  # 5초마다 호출 (밀리초 단위)
+
+#        fileInfo-out-0:
+#          destination: sample-topic
+#          binder: kafka
+
+        historyDb:
+          destination: db-topic
+          binder: kafka
+
+
+    # 테스트시 spring.cloud.function.definition = basicProducer; 추가 
+    function:
+      definition: lineFileProducer; trainApiProducer;
+      
+      # Supplier를 주기적으로 호출하기 위한 poller 설정
+      poller:
+        fixed-delay: 1000  # 1초마다 호출 (밀리초 단위)
+
+feign:
+  client:
+    config:
+      default: # @FeignClient 에서 name 값, 전역으로 설정하려면 default
+        connectTimeout: 5000
+        readTimeout: 2000
+        loggerLevel: FULL
+
+
+logging:
+    level:
+        '[org.egovframe]': DEBUG
+        egovframework: debug
+        org:
+            springframework:
+                r2dbc:
+                    core:
+                        DefaultDatabaseClient: debug
+                cloud:
+                    stream: DEBUG
+        '[org.springframework.cloud.stream]': DEBUG
+        '[org.springframework.integration]': DEBUG
+
+egov:
+  lineFilePath: /Volumes/EXSSD/EGOVSTREAM/ex-CloudDataStream/ex-egovframe-stream-pub-r2dbc/src/main/resources/file/txtData2.csv

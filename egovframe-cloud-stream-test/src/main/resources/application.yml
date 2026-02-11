@@ -1,0 +1,52 @@
+server:
+    port: 9003
+
+spring:
+  rabbitmq:
+    host: 192.168.100.60
+    port: 5672
+    username: guest
+    password: guest
+    virtual-host: egov
+
+  cloud:
+    stream:
+      kafka:
+        binder:
+          autoCreateTopics: true
+          autoAddPartitions: false
+          # Apache Kafka 4.x KRaft 모드에서는 Zookeeper 미사용
+          #zkNodes: 192.168.100.60
+          brokers: 192.168.100.60
+          # Kafka 클라이언트 텔레메트리 비활성화 (브로커에 메트릭 전송 안 함)
+          configuration:
+            enable.metrics.push: false
+
+      bindings:
+
+        basicProducer-out-0:
+          destination: test-topic
+          binder: kafka
+
+      # Supplier를 주기적으로 호출하기 위한 poller 설정
+      poller:
+        fixed-delay: 1000  # 1초마다 호출 (밀리초 단위)
+
+    # spring.cloud.function.definition (stream 하위가 아닌 cloud 하위에 위치해야 함)
+    function:
+      definition: basicProducer
+
+logging:
+    level:
+        '[org.egovframe]': DEBUG
+        egovframework: debug
+        org:
+            springframework:
+                r2dbc:
+                    core:
+                        DefaultDatabaseClient: debug
+                cloud:
+                    stream: DEBUG
+        '[org.springframework.cloud.stream]': DEBUG
+        '[org.springframework.integration]': DEBUG
+

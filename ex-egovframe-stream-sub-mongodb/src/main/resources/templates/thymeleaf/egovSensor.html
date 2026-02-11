@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+	<meta charset="UTF-8" />
+	<title>Temperature Humidity Example</title>
+</head>
+
+<script type="text/javascript" th:src="@{/js/egovframework/jquery-3.6.1.min.js}"></script>
+<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+
+<script type="text/javascript">
+
+	var wsocket;
+	var rowCount = 0;
+	var byteSize = 0;
+
+	$(document).ready(function() {
+
+		//wsocket = new WebSocket("ws://localhost:9000/echo-ws");
+		var serverUrl = $("#serverUrl").val();
+		appendLog("Call Websocket URL : " + serverUrl);
+		wsocket = new WebSocket(serverUrl);
+		wsocket.onmessage = onMessage;
+		wsocket.onclose = onClose;
+
+		wsocket.onopen = function() {
+			$('#sendBtn').click(function() { sendMessage(); });
+			appendLog("Websocket open was successful!");
+		};
+
+		initChart();
+	});
+	
+	function onMessage(evt) {
+		var data = evt.data;
+		const obj = JSON.parse(data);
+		console.log("temperature = "+obj.temp);
+		console.log("humidity = "+obj.humidity);
+
+		rowCount++;
+		byteSize += new Blob([data]).size;
+		$("#rowCount").val(rowCount);
+		$("#byteSize").val(byteSize);
+
+		var now = new Date();
+		var dateStr = now.toLocaleString('ko-KR');
+		appendLog("Client Date : " + dateStr);
+		appendLog("  temp=" + obj.temp + ", humidity=" + obj.humidity);
+
+		dataTemp.setValue(0, 1, obj.temp);
+		chartTemp.draw(dataTemp, optionsTemp);
+
+		dataHumi.setValue(0, 1, obj.humidity);
+		chartHumi.draw(dataHumi, optionsHumi);
+		
+		//wsocket.close();
+	}
+	
+	function onClose(evt) {
+		appendLog("Websocket Closed !!!");
+	}
+
+	function appendLog(msg) {
+		var logArea = document.getElementById("logArea");
+		logArea.value += msg + "\n";
+		logArea.scrollTop = logArea.scrollHeight;
+	}
+	
+	var dataTemp;
+	var dataHumi;
+	var chartTemp;
+	var chartHumi;
+	var optionsTemp;
+	var optionsHumi;
+	function initChart() {
+		
+		google.charts.load('current', {
+			'packages' : [ 'gauge' ]
+		});
+		google.charts.setOnLoadCallback(drawChart);
+
+		function drawChart() {
+
+			dataTemp = google.visualization.arrayToDataTable([
+							[ 'Label', 'Value' ], 
+							[ 'Temperature', 25 ]
+						]);
+
+			optionsTemp = {
+				width : 400,
+				height : 300,
+				redFrom : 60,
+				redTo : 80,
+				yellowFrom : 40,
+				yellowTo : 60,
+				minorTicks : 5,
+				min : -40,
+				max : 80
+			};
+
+			chartTemp = new google.visualization.Gauge(document
+					.getElementById('chartTemp'));
+
+			chartTemp.draw(dataTemp, optionsTemp);
+
+			dataHumi = google.visualization.arrayToDataTable([
+				[ 'Label', 'Value' ], 
+				[ 'Humidity', 50 ]
+			]);
+
+			optionsHumi = {
+				width : 400,
+				height : 300,
+				redFrom : 80,
+				redTo : 100,
+				yellowFrom : 60,
+				yellowTo : 80,
+				minorTicks : 5
+			};
+			
+			chartHumi = new google.visualization.Gauge(document
+					.getElementById('chartHumi'));
+			
+			chartHumi.draw(dataHumi, optionsHumi);
+
+			/* Test Chart
+			setInterval(function() {
+				dataHumi.setValue(0, 1, 40 + Math.round(60 * Math.random()));
+				chartHumi.draw(dataHumi, optionsHumi);
+			}, 1000);
+			*/
+		}
+	}
+</script>
+</head>
+<body>
+
+	Websocket Server URL : <input type="text" id="serverUrl" th:value="${websocketUrl}" style="width:400px"><br>
+	<br>
+	<b>* Total Stream Data</b><br>
+	Row Count : <input type="text" id="rowCount" value="0" readonly style="width:150px"><br>
+	Byte Size : <input type="text" id="byteSize" value="0" readonly style="width:150px"><br>
+	<br>
+	<div id="chartTemp" style="width: 400px; height: 300px; float: left;"></div>
+	<div id="chartHumi" style="width: 400px; height: 300px; float: left;"></div>
+	<div style="clear: both;"></div>
+	<br>
+	<textarea id="logArea" readonly style="width:700px; height:300px; font-family:monospace; font-size:13px;"></textarea>
+    [[${contextPath}]]
+</body>
+</html>

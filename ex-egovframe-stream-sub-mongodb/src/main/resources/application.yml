@@ -1,0 +1,104 @@
+server:
+  port: 9002
+
+spring:
+  data:
+    mongodb:
+      database: com
+      uri: mongodb://com:com01@localhost:27017/com
+
+  rabbitmq:
+    host: 192.168.100.60
+    port: 5672
+    username: guest
+    password: guest
+    virtual-host: egov
+
+  cloud:
+    stream:
+      kafka:
+        binder:
+          autoCreateTopics: false
+          autoAddPartitions: false
+          # Apache Kafka 4.x KRaft 모드에서는 Zookeeper 미사용
+          #zkNodes: 192.168.100.60
+          brokers: 192.168.100.60
+          # Kafka 클라이언트 텔레메트리 비활성화 (브로커에 메트릭 전송 안 함)
+          configuration:
+            enable.metrics.push: false
+        
+      bindings:
+#        output:
+#          destination: sample-topic
+#        input:
+#          destination: sample-topic
+
+        basicProducer-out-0:
+          destination: test-topic
+          binder: kafka
+        basicConsumer-in-0:
+          destination: test-topic
+          binder: kafka
+
+        sensorThermo-in-0:
+          destination: sensor
+          group: q_temp_humi
+          binder: rabbit
+
+        fileLine-in-0:
+          destination: line-topic
+          binder: kafka
+
+        historyDb-in-0:
+          destination: db-topic
+          binder: kafka
+
+        trainApi-in-0:
+          destination: api-topic
+          binder: kafka
+
+#        "sample-topic-in":
+#          binder: kafka
+#          destination: sample-topic
+
+#        "sensor-in":
+#          binder: rabbit
+#          destination: sensor
+
+#      rabbit:
+#        bindings:
+#          sensorThermo-in-0:
+#            consumer:
+#              queueNameGroupOnly: true
+#              declareExchange: false
+#              bindQueue: false
+
+      # 큐 이름을 sensor.q_temp_humi (destination.group) 형태로 사용
+      rabbit:
+        bindings:
+          sensorThermo-in-0:
+            consumer:
+              # queueNameGroupOnly: false 가 기본값이므로 생략 가능
+              declareExchange: false
+              bindQueue: false
+
+    function:
+      definition: sensorThermo; fileLine; historyDb; trainApi
+
+
+  main:
+    allow-bean-definition-overriding: true
+
+logging:
+  level:
+    org:
+      springframework:
+        data:
+          mongodb: debug
+    egovframework:
+      webflux:
+        stream: debug
+
+egov:
+  websocket:
+    host: 192.168.100.60
