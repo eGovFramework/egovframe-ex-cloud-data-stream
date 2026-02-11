@@ -264,14 +264,14 @@ spring:
 
 - **클라이언트**: apache-kafka-java 3.9.1 (Spring Cloud Stream이 가져옴)
 - **브로커**: Apache Kafka 4.0.1
-- **호환성**: ✅ 정상 동작 (Kafka는 하위 호환성 우수)
+- **호환성**: 정상 동작 (Kafka는 하위 호환성 우수)
 - **텔레메트리 경고**: `enable.metrics.push: false`로 해결
 
 ### OpenSearch ↔ Logstash
 
 - **OpenSearch**: 2.15.0
 - **Logstash**: 7.16.2 (logstash-output-opensearch 플러그인 2.0+)
-- **호환성**: ✅ 플러그인 2.0+가 OpenSearch 2.x 지원
+- **호환성**: 플러그인 2.0+가 OpenSearch 2.x 지원
 
 ---
 
