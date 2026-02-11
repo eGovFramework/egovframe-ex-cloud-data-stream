@@ -49,6 +49,22 @@ Spring Integration의 메시징 처리 핵심 기능을 기반으로 사용하�
 | **처리 시점** | 스케줄링을 사용하여 특정 시간에 처리 | 데이터 발생 즉시 또는 일정한 간격 주기로 처리 가능 |
 | **처리 방식** | 일괄로 정의된 유효단위 처리 | 데이터를 실시간으로 처리 |
 
+### Data Stream 예제 5종
+
+다양한 데이터 소스(IoT, 로그, 파일, DB, Open API)가 메시지 브로커(RabbitMQ, Apache Kafka)를 거쳐 Spring Cloud Stream·eGovFrame 실행환경 및 OpenSearch Architecture로 연동되는 서비스 메시 구성을 아래와 같이 정리할 수 있다.
+
+![Data Stream 예제 5종 - Service mesh 구성도](doc/images/data_stream_example.png)
+
+**연계 유형 요약 (실시간)**
+
+| 순번 | 유형 | 발행(Publisher) | Message Broker | 구독(Subscriber) | 비고 |
+|:----:|:-----|:----------------|:---------------|:-----------------|:-----|
+| 1 | IOT | 온습도 센서 | RabbitMQ | Websocket(Google Chart) | |
+| 2 | Log | Logback Appender | Apache Kafka | OpenSearch | Logstash로 자료 처리 및 연동 |
+| 3 | File | Line 기반 파일 | Apache Kafka | Websocket | |
+| 4 | DB | H2 DB | Apache Kafka | Websocket(Google Chart) | |
+| 5 | Open API | 지하철 전동차 정보 | Apache Kafka | MongoDB | 구독 데이터 저장 |
+
 ---
 
 ## 인프라 구성 정보
