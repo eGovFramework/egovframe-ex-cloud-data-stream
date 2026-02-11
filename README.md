@@ -147,7 +147,7 @@ docker compose up -d
 | OpenSearch Dashboards | 5601 | http://localhost:5601 | 대시보드 |
 | Logstash | 5001 | - | 파이프라인 입력 |
 
-**※ 주의**: 기본 설정 비번은 반드시 변경한 후 사용한다.
+**⚠️ 주의**: 기본 설정 비번은 반드시 변경한 후 사용한다.
 
 ---
 
