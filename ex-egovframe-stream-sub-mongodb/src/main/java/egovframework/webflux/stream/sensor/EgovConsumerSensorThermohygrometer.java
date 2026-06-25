@@ -22,7 +22,7 @@ public class EgovConsumerSensorThermohygrometer {
 	private final Sinks.Many<String> sink;
 	
     @Bean
-    public Consumer<String> sensorThermo() {
+    Consumer<String> sensorThermo() {
 
     	Consumer<String> sensorConsumer = (payload) -> {
     		//log.debug("===>>> thermo = {}", payload);

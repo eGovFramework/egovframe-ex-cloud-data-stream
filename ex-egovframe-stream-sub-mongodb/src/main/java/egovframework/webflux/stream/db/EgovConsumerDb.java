@@ -22,7 +22,7 @@ public class EgovConsumerDb {
 	private final ObjectMapper objectMapper = new ObjectMapper();
 	
     @Bean
-    public Consumer<String> historyDb() {
+    Consumer<String> historyDb() {
     	
     	Consumer<String> historyDbConsumer = (payload) -> {
     		log.debug("===> Received DB message: " + payload);

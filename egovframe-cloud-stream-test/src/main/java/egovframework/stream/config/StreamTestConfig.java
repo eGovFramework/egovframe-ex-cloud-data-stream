@@ -14,7 +14,7 @@ import lombok.extern.slf4j.Slf4j;
 public class StreamTestConfig {
 	
     @Bean
-    public Supplier<String> basicProducer() {
+    Supplier<String> basicProducer() {
     	System.out.println("===>>> producer OK");
     	Supplier<String> supplier = () -> {
     		
@@ -36,7 +36,7 @@ public class StreamTestConfig {
     }
     
     @Bean
-    public Consumer<String> basicConsumer() {
+    Consumer<String> basicConsumer() {
     	System.out.println("===>>> consumer OK");
     	//return msg -> System.out.println("===>>> message = "+ msg);
     	/*

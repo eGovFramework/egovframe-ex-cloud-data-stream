@@ -32,7 +32,7 @@ public class EgovStreamLineFile {
 	private BufferedReader br;
 	
     @Bean
-    public Supplier<String> lineFileProducer() {
+    Supplier<String> lineFileProducer() {
 
     	file = new File(filePath);
     	

@@ -22,7 +22,7 @@ public class EgovConsumerFileLine {
 	private final Sinks.Many<String> sinkFile;
 	
     @Bean
-    public Consumer<String> fileLine() {
+    Consumer<String> fileLine() {
     	
     	Consumer<String> fileLineConsumer = (payload) -> {
     		log.debug("===> Received File message: " + payload);

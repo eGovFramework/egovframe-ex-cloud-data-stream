@@ -19,7 +19,7 @@ import lombok.extern.slf4j.Slf4j;
 public class EgovConsumerTrainApi {
 
     @Bean
-    public Consumer<List<RealtimePositionDTO>> trainApi(RealtimePositionRepository realtimePositionRepository) {
+    Consumer<List<RealtimePositionDTO>> trainApi(RealtimePositionRepository realtimePositionRepository) {
     	
     	Consumer<List<RealtimePositionDTO>> trainApiConsumer = (payload) -> {
     		log.debug("===> Received Train API message: " + payload);

@@ -28,7 +28,7 @@ public class EgovWebConfig extends WebFluxConfigurationSupport {
     }
 
     @Bean
-    public MessageSource messageSource() {
+    MessageSource messageSource() {
         ResourceBundleMessageSource messageSource = new ResourceBundleMessageSource();
         messageSource.setBasename("messages");
         messageSource.setDefaultEncoding("UTF-8");
@@ -37,12 +37,12 @@ public class EgovWebConfig extends WebFluxConfigurationSupport {
     }
 
     @Bean
-    public MessageSourceAccessor messageSourceAccessor() {
+    MessageSourceAccessor messageSourceAccessor() {
         return new MessageSourceAccessor(messageSource());
     }
 
     @Bean
-    public ITemplateResolver thymeleafTemplateResolver() {
+    ITemplateResolver thymeleafTemplateResolver() {
         final SpringResourceTemplateResolver resolver = new SpringResourceTemplateResolver();
         resolver.setApplicationContext(this.applicationContext);
         resolver.setPrefix("classpath:templates/thymeleaf/");
@@ -54,14 +54,14 @@ public class EgovWebConfig extends WebFluxConfigurationSupport {
     }
 
     @Bean
-    public ISpringWebFluxTemplateEngine thymeleafTemplateEngine() {
+    ISpringWebFluxTemplateEngine thymeleafTemplateEngine() {
         SpringWebFluxTemplateEngine templateEngine = new SpringWebFluxTemplateEngine();
         templateEngine.setTemplateResolver(thymeleafTemplateResolver());
         return templateEngine;
     }
 
     @Bean
-    public ThymeleafReactiveViewResolver thymeleafReactiveViewResolver() {
+    ThymeleafReactiveViewResolver thymeleafReactiveViewResolver() {
         ThymeleafReactiveViewResolver viewResolver = new ThymeleafReactiveViewResolver();
         viewResolver.setTemplateEngine(thymeleafTemplateEngine());
         return viewResolver;

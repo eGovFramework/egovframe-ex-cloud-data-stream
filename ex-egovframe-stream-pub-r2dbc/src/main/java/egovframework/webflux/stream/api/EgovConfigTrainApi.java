@@ -30,7 +30,7 @@ public class EgovConfigTrainApi {
 	private static int INTERVAL = 2;
 
     @Bean
-    public Supplier<List<RealtimePosition>> trainApiProducer() {
+    Supplier<List<RealtimePosition>> trainApiProducer() {
     	log.debug("===>>> trainPosition Producer OK");
 
     	

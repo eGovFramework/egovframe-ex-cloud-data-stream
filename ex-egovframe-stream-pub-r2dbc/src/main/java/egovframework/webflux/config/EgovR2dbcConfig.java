@@ -17,7 +17,7 @@ import io.r2dbc.spi.ConnectionFactory;
 public class EgovR2dbcConfig {
 
     @Bean
-    public ConnectionFactory connectionFactory() {
+    ConnectionFactory connectionFactory() {
         return new H2ConnectionFactory(H2ConnectionConfiguration.builder()
                 .inMemory("sampledb")
                 .property(H2ConnectionOption.DB_CLOSE_DELAY,"-1") // DB 연결을 닫아도 VM이 유지되는 동안 Content 유지
@@ -26,7 +26,7 @@ public class EgovR2dbcConfig {
     }
 
     @Bean
-    public ConnectionFactoryInitializer initializer(ConnectionFactory connectionFactory) {
+    ConnectionFactoryInitializer initializer(ConnectionFactory connectionFactory) {
         ConnectionFactoryInitializer initializer = new ConnectionFactoryInitializer();
         initializer.setConnectionFactory(connectionFactory);
         initializer.setDatabasePopulator(new ResourceDatabasePopulator(new ClassPathResource("db/sampledb.sql")));

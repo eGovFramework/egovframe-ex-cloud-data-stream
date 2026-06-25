@@ -15,7 +15,7 @@ public class EgovframeWebfluxMongodbApplication {
     }
 
     @Bean
-    public CommandLineRunner init(RealtimePositionRepository realtimePositionRepository) {
+    CommandLineRunner init(RealtimePositionRepository realtimePositionRepository) {
         return args -> {
         	realtimePositionRepository.deleteAll().doOnSuccess(result -> System.out.println("RealtimePositon Table Delete Ok!")).subscribe();
 

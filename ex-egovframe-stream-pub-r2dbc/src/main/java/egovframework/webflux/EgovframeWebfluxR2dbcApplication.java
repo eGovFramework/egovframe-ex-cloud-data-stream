@@ -19,7 +19,7 @@ public class EgovframeWebfluxR2dbcApplication {
     }
 
     @Bean
-    public CommandLineRunner init(IdsRepository idsRepository, SampleRepository sampleRepository) {
+    CommandLineRunner init(IdsRepository idsRepository, SampleRepository sampleRepository) {
         return args -> {
             idsRepository.deleteAll().doOnSuccess(result -> System.out.println("Ids Table Delete Ok!")).subscribe();
 
