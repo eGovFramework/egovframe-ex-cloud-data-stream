@@ -13,7 +13,7 @@ public interface SampleService {
 
     Mono<SampleVO> add(SampleVO sampleVO);
 
-    Mono<SampleVO> update(SampleVO sampleVO);
+    Mono<SampleVO> update(int id, SampleVO sampleVO);
 
     Mono<Void> delete(int id);
 

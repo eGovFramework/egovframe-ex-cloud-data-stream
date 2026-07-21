@@ -7,9 +7,13 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.support.MessageSourceAccessor;
 import org.springframework.context.support.ResourceBundleMessageSource;
+import org.springframework.core.Ordered;
+import org.springframework.core.annotation.Order;
+import org.springframework.http.HttpHeaders;
 import org.springframework.web.reactive.config.ResourceHandlerRegistry;
 import org.springframework.web.reactive.config.ViewResolverRegistry;
 import org.springframework.web.reactive.config.WebFluxConfigurationSupport;
+import org.springframework.web.server.WebFilter;
 import org.thymeleaf.spring6.ISpringWebFluxTemplateEngine;
 import org.thymeleaf.spring6.SpringWebFluxTemplateEngine;
 import org.thymeleaf.spring6.templateresolver.SpringResourceTemplateResolver;
@@ -89,5 +93,21 @@ public class EgovWebConfig extends WebFluxConfigurationSupport {
         factoryBean.setValidationMessageSource(messageSource());
         return factoryBean;
     }*/
+
+    /**
+     * MIME 스니핑, 클릭재킹 등을 완화하는 기본 보안 응답 헤더를 모든 응답에 추가한다.
+     * (데모 페이지가 인라인 스크립트를 사용하므로 학습 기능을 깨뜨리는 CSP는 적용하지 않는다.)
+     */
+    @Bean
+    @Order(Ordered.HIGHEST_PRECEDENCE)
+    public WebFilter securityHeadersWebFilter() {
+        return (exchange, chain) -> {
+            HttpHeaders headers = exchange.getResponse().getHeaders();
+            headers.add("X-Content-Type-Options", "nosniff");
+            headers.add("X-Frame-Options", "DENY");
+            headers.add("Referrer-Policy", "strict-origin-when-cross-origin");
+            return chain.filter(exchange);
+        };
+    }
 
 }

@@ -55,7 +55,7 @@ public class SampleHandler {
     public Mono<ServerResponse> update(ServerRequest request) {
         int id = Integer.parseInt(request.pathVariable("id"));
         return request.bodyToMono(SampleVO.class)
-                .flatMap(this.sampleService::update)
+                .flatMap(sampleVO -> this.sampleService.update(id, sampleVO))
                 .flatMap(result -> ServerResponse.ok().build());
     }
 
