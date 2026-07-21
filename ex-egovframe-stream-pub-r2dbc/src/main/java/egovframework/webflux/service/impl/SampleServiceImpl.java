@@ -66,9 +66,11 @@ public class SampleServiceImpl implements SampleService {
         return this.sampleRepository.save(sample).map(EgovAppUtils::entityToVo);
     }
 
-    public Mono<SampleVO> update(SampleVO sampleVO) {
+    public Mono<SampleVO> update(int id, SampleVO sampleVO) {
+        // 본문(SampleVO)의 id는 신뢰하지 않고, 호출자가 지정한 id(경로 변수 등)만을 대상 식별자로 사용한다.
+        // (mass assignment로 본문 id를 신뢰해 임의 레코드를 갱신하는 것을 방지)
         Sample sample = EgovAppUtils.voToEntity(sampleVO);
-        return this.sampleRepository.findById(sample.getId())
+        return this.sampleRepository.findById(id)
                 .flatMap(result -> {
                     result.setName(sample.getName());
                     result.setDescription(sample.getDescription());

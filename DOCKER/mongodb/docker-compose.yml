@@ -6,12 +6,13 @@ services:
       - egov-network
     ports:
       - 27017:27017
+    # 실제 값은 .env(미커밋)로 주입, .env.example 참고
     environment:
       - MONGO_INITDB_DATABASE=com
-      - MONGO_INITDB_ROOT_USERNAME=root
-      - MONGO_INITDB_ROOT_PASSWORD=frame001
-      - MONGO_USERNAME=com
-      - MONGO_PASSWORD=com01
+      - MONGO_INITDB_ROOT_USERNAME=${MONGO_INITDB_ROOT_USERNAME:-root}
+      - MONGO_INITDB_ROOT_PASSWORD=${MONGO_INITDB_ROOT_PASSWORD:?MONGO_INITDB_ROOT_PASSWORD is required. Copy .env.example to .env and set it.}
+      - MONGO_USERNAME=${MONGO_USERNAME:-com}
+      - MONGO_PASSWORD=${MONGO_PASSWORD:-com01}
     restart: always
     platform: linux/x86_64
 

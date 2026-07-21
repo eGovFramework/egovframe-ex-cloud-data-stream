@@ -67,7 +67,7 @@ public class SampleController {
         if (bindingResult.hasErrors()) {
             return "egovSampleRegister";
         }
-        this.service.update(sampleVO).subscribe();
+        this.service.update(sampleVO.getId(), sampleVO).subscribe();
         return "redirect:/";
     }
 
