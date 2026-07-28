@@ -114,6 +114,7 @@ test-output/
 # Misc
 *.class
 *.log
+pub_log.txt
 hs_err_pid*
 
 # personal notes
