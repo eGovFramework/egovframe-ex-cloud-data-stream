@@ -31,7 +31,7 @@ public class ReactiveWebSocketConfiguration {
 	*/
 	
 	@Bean
-	public HandlerMapping handlerMapping(SensorWebSocketHandler swsh, FileWebSocketHandler fwsh, DbWebSocketHandler dwsh) {
+	HandlerMapping handlerMapping(SensorWebSocketHandler swsh, FileWebSocketHandler fwsh, DbWebSocketHandler dwsh) {
 		Map<String, WebSocketHandler> map = new HashMap<>();
 		map.put("/ws/echo", new EchoHandler());
 		map.put("/ws/file", fwsh);
@@ -49,17 +49,17 @@ public class ReactiveWebSocketConfiguration {
 	}
 
 	@Bean
-	public Sinks.Many<String> sink() {
+	Sinks.Many<String> sink() {
 		return Sinks.many().multicast().directBestEffort();
 	}
 
 	@Bean
-	public Sinks.Many<String> sinkFile() {
+	Sinks.Many<String> sinkFile() {
 		return Sinks.many().multicast().directBestEffort();
 	}
 
 	@Bean
-	public Sinks.Many<String> sinkDb() {
+	Sinks.Many<String> sinkDb() {
 		return Sinks.many().multicast().directBestEffort();
 	}
 

@@ -17,7 +17,7 @@ public class EgovConfigOpenFeign {
      * OpenFeign의 SpringDecoder가 응답 디코딩 시 이 빈을 필요로 하므로 수동 등록.
      */
     @Bean
-    public HttpMessageConverters httpMessageConverters() {
+    HttpMessageConverters httpMessageConverters() {
         return new HttpMessageConverters();
     }
 

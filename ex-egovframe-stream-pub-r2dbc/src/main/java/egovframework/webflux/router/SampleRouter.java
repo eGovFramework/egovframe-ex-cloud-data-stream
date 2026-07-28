@@ -68,7 +68,7 @@ public class SampleRouter {
                             summary = "데이터 삭제", description = "데이터를 삭제합니다."))
     })
     @Bean
-    public RouterFunction<ServerResponse> routerFunction(SampleHandler sampleHandler) {
+    RouterFunction<ServerResponse> routerFunction(SampleHandler sampleHandler) {
         return RouterFunctions.route(GET("/router/list"), sampleHandler::list)
                 .andRoute(GET("/router/{id}"), sampleHandler::get)
                 .andRoute(POST("/router/add"), sampleHandler::add)
