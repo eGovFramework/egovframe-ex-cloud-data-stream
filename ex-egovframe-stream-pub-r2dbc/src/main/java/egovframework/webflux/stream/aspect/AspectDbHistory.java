@@ -169,7 +169,7 @@ public class AspectDbHistory {
         	case "findBySampleIdContaining":
         		if (args.length > 0) {
         			Sample search = new Sample();
-        			search.setId(Integer.parseInt(args[0].toString()));
+        			search.setSampleId(args[0].toString());
         			
         			log.debug("===>>> param : "+String.valueOf(args[0]));
         			
@@ -199,9 +199,7 @@ public class AspectDbHistory {
         	case "delete":
         		if (args.length > 0) { 
         			log.debug("===>>> param : "+String.valueOf(args[0]));
-        			Sample content = new Sample();
-        			
-        			content.setId(Integer.parseInt(args[0].toString()));
+        			Sample content = (Sample) args[0];
         			processChangeHistory(elapsedTimeMills, className, methodName, content);
 
         		}
