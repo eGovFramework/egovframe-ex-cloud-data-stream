@@ -112,7 +112,7 @@ class SampleServiceImplTest {
         vo.setUseYn("N");
         vo.setRegUser("user1");
 
-        StepVerifier.create(sampleService.update(vo))
+        StepVerifier.create(sampleService.update(1, vo))
             .assertNext(result -> {
                 assertThat(result.getName()).isEqualTo("수정명");
                 assertThat(result.getUseYn()).isEqualTo("N");
