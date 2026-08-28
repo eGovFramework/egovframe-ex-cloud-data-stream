@@ -248,7 +248,7 @@ public class AspectDbHistory {
 		result.subscribe(sample -> {
 			// toString()으로 출력 - 성능상 사용않는 것이 좋음
 			log.debug("===>>> result : "+String.valueOf(sample));
-			resultList.add(0,sample);
+			resultList.add(sample);
 		    //streamBridge.send("historyDb", sample);
 		});
 		/*
