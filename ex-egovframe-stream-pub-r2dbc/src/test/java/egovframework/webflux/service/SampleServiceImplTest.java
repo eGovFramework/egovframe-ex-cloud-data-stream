@@ -106,13 +106,13 @@ class SampleServiceImplTest {
         given(sampleRepository.save(any(Sample.class))).willReturn(Mono.just(saved));
 
         SampleVO vo = new SampleVO();
-        vo.setId(1);
+        vo.setId(saved.getId());
         vo.setName("수정명");
         vo.setDescription("수정 설명");
         vo.setUseYn("N");
         vo.setRegUser("user1");
 
-        StepVerifier.create(sampleService.update(vo))
+        StepVerifier.create(sampleService.update(saved.getId(), vo))
             .assertNext(result -> {
                 assertThat(result.getName()).isEqualTo("수정명");
                 assertThat(result.getUseYn()).isEqualTo("N");
