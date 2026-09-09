@@ -1,7 +1,5 @@
 package egovframework.webflux.stream.controller;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.ui.Model;
@@ -23,7 +21,6 @@ import reactor.core.publisher.Sinks;
 @RequiredArgsConstructor
 public class EgovSocketController {
 
-	private static final Logger LOGGER = LoggerFactory.getLogger(EgovSocketController.class);
     private final Sinks.Many<String> sink;
 
     @Value("${egov.websocket.host}")
@@ -68,9 +65,9 @@ public class EgovSocketController {
     	try {
 			resultJson = mapper.writeValueAsString(tempHumiVO);
 		} catch (JsonProcessingException e) {
-			LOGGER.error(e.getMessage());
+			log.error(e.getMessage());
 		}
-    	LOGGER.info("===>>> "+resultJson);
+    	log.info("===>>> "+resultJson);
     	//String message = "hello";
     	sink.emitNext(resultJson, Sinks.EmitFailureHandler.FAIL_FAST);
     	

@@ -1,8 +1,5 @@
 package egovframework.webflux.stream.listener;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -17,8 +14,6 @@ import reactor.core.publisher.Sinks;
 //@EnableBinding(EgovSensorProcessor.class)
 public class EgovSensorMessageListener {
 
-	private static final Logger LOGGER = LoggerFactory.getLogger(EgovSensorMessageListener.class);
-	
 	private final Sinks.Many<String> sink;
 	
 	//@StreamListener(EgovSensorProcessor.INPUT)
