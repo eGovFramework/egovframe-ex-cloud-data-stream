@@ -188,8 +188,7 @@ public class AspectDbHistory {
         		break;
         		
         	case "save":
-        		if (args.length > 0) { 
-        			Sample content = (Sample) args[0];
+        		if (args.length > 0 && args[0] instanceof Sample content) { 
         			log.debug("===>>> result : "+String.valueOf(content));
         			
         			processChangeHistory(elapsedTimeMills, className, methodName, content);
