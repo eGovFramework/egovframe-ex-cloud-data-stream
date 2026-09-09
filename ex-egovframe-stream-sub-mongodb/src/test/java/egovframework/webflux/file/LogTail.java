@@ -23,8 +23,8 @@ public class LogTail {
 		this.fname = fname;
 	}
 
-	private void fullLog() {
-	}
+//	private void fullLog() {
+//	}
 
 	/**
 	 * 파일 마지막 위치

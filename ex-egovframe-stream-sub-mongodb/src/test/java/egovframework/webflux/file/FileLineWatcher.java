@@ -5,7 +5,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -53,16 +52,16 @@ public class FileLineWatcher implements Runnable {
 		System.out.println("Stop to tail a file - " + file.getName());
 	}
 
-	private void stringToAscii(String str) {
-	String[] strArr = str.split("");
-	int[] resultIntArr = new int[strArr.length];
-
-	for (int i = 0; i < strArr.length; i++) {
-	    int itemNum = str.charAt(i);
-	    resultIntArr[i] = itemNum;
-	}
-	log.debug("resultIntArr :: " + Arrays.toString(resultIntArr));
-	}
+//	private void stringToAscii(String str) {
+//	String[] strArr = str.split("");
+//	int[] resultIntArr = new int[strArr.length];
+//
+//	for (int i = 0; i < strArr.length; i++) {
+//	    int itemNum = str.charAt(i);
+//	    resultIntArr[i] = itemNum;
+//	}
+//	log.debug("resultIntArr :: " + Arrays.toString(resultIntArr));
+//	}
 	
 	/**
 	 * 스레드 중지 기능.
