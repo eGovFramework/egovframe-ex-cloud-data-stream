@@ -100,7 +100,7 @@ public class EgovWebConfig extends WebFluxConfigurationSupport {
      */
     @Bean
     @Order(Ordered.HIGHEST_PRECEDENCE)
-    public WebFilter securityHeadersWebFilter() {
+    WebFilter securityHeadersWebFilter() {
         return (exchange, chain) -> {
             HttpHeaders headers = exchange.getResponse().getHeaders();
             headers.add("X-Content-Type-Options", "nosniff");

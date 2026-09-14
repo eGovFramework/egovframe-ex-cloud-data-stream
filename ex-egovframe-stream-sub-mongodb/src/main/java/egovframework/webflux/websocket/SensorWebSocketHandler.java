@@ -35,12 +35,12 @@ public class SensorWebSocketHandler implements WebSocketHandler {
     	return session.send(p);
     }
 
-    private Mono<Void> doSend(WebSocketSession session, Publisher<WebSocketMessage> output) {
-    	return session.send(
-        		session.receive()
-                .doOnNext(WebSocketMessage::retain)// Use retain() for Reactor Netty
-                .map(m -> session.textMessage("received:" + m.getPayloadAsText()))
-                );
-    }
+//    private Mono<Void> doSend(WebSocketSession session, Publisher<WebSocketMessage> output) {
+//    	return session.send(
+//        		session.receive()
+//                .doOnNext(WebSocketMessage::retain)// Use retain() for Reactor Netty
+//                .map(m -> session.textMessage("received:" + m.getPayloadAsText()))
+//                );
+//    }
 
 }

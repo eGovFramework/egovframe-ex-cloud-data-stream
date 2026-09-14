@@ -21,7 +21,7 @@ import lombok.extern.slf4j.Slf4j;
 public class EgovStreamLineFile {
 	
 	private static int PAGE_COUNT = 10;
-	private static final int DELAY_MILLIS = 50;
+//	private static final int DELAY_MILLIS = 50;
 	
 	// path = /Volumes/EXSSD/EGOV/temp/txtData2.csv
     @Value("${egov.lineFilePath}")

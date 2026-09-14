@@ -1,7 +1,6 @@
 package egovframework.webflux.stream.api;
 
 import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
 
@@ -13,7 +12,6 @@ import egovframework.webflux.stream.feign.EgovTrainFeignClient;
 import egovframework.webflux.stream.feign.ErrorMessage;
 import egovframework.webflux.stream.feign.RealtimePosition;
 import egovframework.webflux.stream.feign.ResultTrainPosition;
-import egovframework.webflux.stream.feign.XmlResultTrainPosition;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -23,10 +21,10 @@ public class EgovConfigTrainApi {
 	@Autowired
 	EgovTrainFeignClient trainFeignClient;
 	
-	private AtomicBoolean aBool = new AtomicBoolean(true);
+//	private AtomicBoolean aBool = new AtomicBoolean(true);
 	private AtomicInteger aInt = new AtomicInteger(-1);
 	
-	private XmlResultTrainPosition xmlResultTrainPosition;
+//	private XmlResultTrainPosition xmlResultTrainPosition;
 	private static int INTERVAL = 2;
 
     @Bean

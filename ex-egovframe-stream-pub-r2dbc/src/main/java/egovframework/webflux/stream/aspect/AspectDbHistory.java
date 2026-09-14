@@ -3,7 +3,6 @@ package egovframework.webflux.stream.aspect;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.After;
@@ -210,6 +209,7 @@ public class AspectDbHistory {
     }
 
 	private void processViewHistory(Object retVal, long elapsedTimeMills, String className, String methodName) {
+		@SuppressWarnings("unchecked")
 		Mono<Sample> result = (Mono<Sample>)retVal;
 		result.subscribe(content -> {
 			SampleDTO sampleDTO = new SampleDTO();
@@ -243,6 +243,7 @@ public class AspectDbHistory {
 	}
 
 	private void processSearchHistory(Object retVal, long elapsedTimeMills, String className, String methodName, Sample search, Sort sort) {
+		@SuppressWarnings("unchecked")
 		Flux<Sample> result = (Flux<Sample>)retVal;
 		List<Sample> resultList = new ArrayList<>();
 		result.subscribe(sample -> {
