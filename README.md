@@ -145,7 +145,7 @@ docker compose up -d
 | MongoDB | 27017 | `192.168.100.60:27017` | root/frame001 |
 | OpenSearch | 9200 | https://localhost:9200 | admin/Egov2015! |
 | OpenSearch Dashboards | 5601 | http://localhost:5601 | 대시보드 |
-| Logstash | 5001 | - | 파이프라인 입력 |
+| Logstash | - | - | Kafka `egov-logs` 토픽 구독 |
 
 **⚠️ 주의**: 기본 설정 비번은 반드시 변경한 후 사용한다.
 
