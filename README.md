@@ -102,6 +102,7 @@ IP 설정이 필요한 파일:
 - `DOCKER/apache-kafka/docker-compose.yml` - KAFKA_ADVERTISED_LISTENERS
 - `ex-egovframe-stream-pub-r2dbc/src/main/resources/application.yml` - brokers, rabbitmq.host
 - `ex-egovframe-stream-sub-mongodb/src/main/resources/application.yml` - brokers, rabbitmq.host, websocket.host
+- `DOCKER/opensearch/logstash/pipeline/logstash.conf` - bootstrap_servers
 
 ---
 
