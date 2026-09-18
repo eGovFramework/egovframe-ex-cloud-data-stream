@@ -2,7 +2,7 @@
 <Configuration>
 
 	<!-- my_app_file.log 저장될 실제 디렉토리 위치 지정 -->
-	<property name="LOG_DIR" value="/Volumes/EXSSD/EGOVSTREAM/ex-CloudDataStream/logs/"></property>
+	<property name="LOG_DIR" value="logs"></property>
 	<property name="LOG_FILE" value="my_app_file.log"></property>
 
 	<appender name="STDOUT"
