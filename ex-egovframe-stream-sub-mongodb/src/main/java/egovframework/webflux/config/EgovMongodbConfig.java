@@ -11,6 +11,9 @@ import com.mongodb.ConnectionString;
 import com.mongodb.reactivestreams.client.MongoClient;
 import com.mongodb.reactivestreams.client.MongoClients;
 
+/**
+ * Reactive MongoDB 설정
+ */
 @Configuration
 @EnableReactiveMongoRepositories(basePackages={"egovframework.webflux.repository"})
 public class EgovMongodbConfig extends AbstractReactiveMongoConfiguration {

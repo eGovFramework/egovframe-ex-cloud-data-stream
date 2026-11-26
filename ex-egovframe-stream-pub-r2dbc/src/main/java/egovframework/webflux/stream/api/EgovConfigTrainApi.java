@@ -5,6 +5,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -14,21 +15,29 @@ import egovframework.webflux.stream.feign.RealtimePosition;
 import egovframework.webflux.stream.feign.ResultTrainPosition;
 import lombok.extern.slf4j.Slf4j;
 
+/**
+ * 지하철 실시간 위치 Open API 를 호출하여 api-topic 으로 발행
+ */
 @Slf4j
 @Configuration
 public class EgovConfigTrainApi {
 
 	@Autowired
 	EgovTrainFeignClient trainFeignClient;
+
+	@Value("${egov.trainApi.authKey}")
+	private String authKey;
+
+	@Value("${egov.trainApi.lineNumber}")
+	private String lineNumber;
 	
-//	private AtomicBoolean aBool = new AtomicBoolean(true);
 	private AtomicInteger aInt = new AtomicInteger(-1);
 	
-//	private XmlResultTrainPosition xmlResultTrainPosition;
 	private static int INTERVAL = 2;
 
+    /** poller 호출 INTERVAL 회마다 1회 API 조회 (그 외에는 null 반환 → 미발행) */
     @Bean
-    Supplier<List<RealtimePosition>> trainApiProducer() {
+    public Supplier<List<RealtimePosition>> trainApiProducer() {
     	log.debug("===>>> trainPosition Producer OK");
 
     	
@@ -38,7 +47,7 @@ public class EgovConfigTrainApi {
     		
     		if ( aInt.addAndGet(1) % INTERVAL == 0) {
     		
-    			ResultTrainPosition resultTrainPosition = trainFeignClient.jsonRealtimeTrainPosition("sample","1");
+    			ResultTrainPosition resultTrainPosition = trainFeignClient.jsonRealtimeTrainPosition(authKey, lineNumber);
 	    		ErrorMessage errorMessage = resultTrainPosition.getErrorMessage();
 	    		List<RealtimePosition> listRealtimePositions = resultTrainPosition.getRealtimePositionList();
 	

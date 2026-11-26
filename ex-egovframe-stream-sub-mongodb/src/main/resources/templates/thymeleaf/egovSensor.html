@@ -6,7 +6,7 @@
 </head>
 
 <script type="text/javascript" th:src="@{/js/egovframework/jquery-3.6.1.min.js}"></script>
-<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+<script type="text/javascript" th:src="@{/js/egovframework/chart.min.js}"></script>
 
 <script type="text/javascript">
 
@@ -16,7 +16,6 @@
 
 	$(document).ready(function() {
 
-		//wsocket = new WebSocket("ws://localhost:9000/echo-ws");
 		var serverUrl = $("#serverUrl").val();
 		appendLog("Call Websocket URL : " + serverUrl);
 		wsocket = new WebSocket(serverUrl);
@@ -47,13 +46,8 @@
 		appendLog("Client Date : " + dateStr);
 		appendLog("  temp=" + obj.temp + ", humidity=" + obj.humidity);
 
-		dataTemp.setValue(0, 1, obj.temp);
-		chartTemp.draw(dataTemp, optionsTemp);
-
-		dataHumi.setValue(0, 1, obj.humidity);
-		chartHumi.draw(dataHumi, optionsHumi);
-		
-		//wsocket.close();
+		updateGauge(chartTemp, obj.temp);
+		updateGauge(chartHumi, obj.humidity);
 	}
 	
 	function onClose(evt) {
@@ -66,70 +60,65 @@
 		logArea.scrollTop = logArea.scrollHeight;
 	}
 	
-	var dataTemp;
-	var dataHumi;
 	var chartTemp;
 	var chartHumi;
-	var optionsTemp;
-	var optionsHumi;
-	function initChart() {
-		
-		google.charts.load('current', {
-			'packages' : [ 'gauge' ]
-		});
-		google.charts.setOnLoadCallback(drawChart);
 
-		function drawChart() {
-
-			dataTemp = google.visualization.arrayToDataTable([
-							[ 'Label', 'Value' ], 
-							[ 'Temperature', 25 ]
-						]);
-
-			optionsTemp = {
-				width : 400,
-				height : 300,
-				redFrom : 60,
-				redTo : 80,
-				yellowFrom : 40,
-				yellowTo : 60,
-				minorTicks : 5,
-				min : -40,
-				max : 80
-			};
-
-			chartTemp = new google.visualization.Gauge(document
-					.getElementById('chartTemp'));
-
-			chartTemp.draw(dataTemp, optionsTemp);
-
-			dataHumi = google.visualization.arrayToDataTable([
-				[ 'Label', 'Value' ], 
-				[ 'Humidity', 50 ]
-			]);
-
-			optionsHumi = {
-				width : 400,
-				height : 300,
-				redFrom : 80,
-				redTo : 100,
-				yellowFrom : 60,
-				yellowTo : 80,
-				minorTicks : 5
-			};
-			
-			chartHumi = new google.visualization.Gauge(document
-					.getElementById('chartHumi'));
-			
-			chartHumi.draw(dataHumi, optionsHumi);
-
-			/* Test Chart
-			setInterval(function() {
-				dataHumi.setValue(0, 1, 40 + Math.round(60 * Math.random()));
-				chartHumi.draw(dataHumi, optionsHumi);
-			}, 1000);
-			*/
+	// 게이지 중앙에 현재 값 표시
+	const gaugeLabel = {
+		id: 'gaugeLabel',
+		afterDraw(chart) {
+			const g = chart.options.plugins.gauge;
+			const ctx = chart.ctx;
+			const area = chart.chartArea;
+			ctx.save();
+			ctx.textAlign = 'center';
+			ctx.fillStyle = '#333';
+			ctx.font = 'bold 28px sans-serif';
+			ctx.fillText(g.value + g.unit, (area.left + area.right) / 2, area.bottom - 20);
+			ctx.font = '12px sans-serif';
+			ctx.fillText(g.min + ' ~ ' + g.max + g.unit, (area.left + area.right) / 2, area.bottom);
+			ctx.restore();
 		}
+	};
+
+	// 반원 도넛 차트로 게이지 구성 (yellowFrom·redFrom 이상이면 색상 변경)
+	function createGauge(canvasId, title, gauge) {
+		return new Chart(document.getElementById(canvasId).getContext('2d'), {
+			type: 'doughnut',
+			data: {
+				labels: [title, ''],
+				datasets: [{ data: [0, 1], backgroundColor: ['#2e7d32', '#e0e0e0'], borderWidth: 0 }]
+			},
+			options: {
+				responsive: false,
+				rotation: -90,
+				circumference: 180,
+				cutout: '70%',
+				plugins: {
+					legend: { display: false },
+					tooltip: { enabled: false },
+					title: { display: true, text: title, font: { size: 16 } },
+					gauge: gauge
+				}
+			},
+			plugins: [gaugeLabel]
+		});
+	}
+
+	function updateGauge(chart, value) {
+		const g = chart.options.plugins.gauge;
+		const v = Math.min(Math.max(value, g.min), g.max);
+		g.value = value;
+		chart.data.datasets[0].data = [v - g.min, g.max - v];
+		chart.data.datasets[0].backgroundColor[0] = v >= g.redFrom ? '#c62828' : (v >= g.yellowFrom ? '#f9a825' : '#2e7d32');
+		chart.update();
+	}
+
+	function initChart() {
+		chartTemp = createGauge('chartTemp', 'Temperature', { min: -40, max: 80, yellowFrom: 40, redFrom: 60, unit: '℃', value: 25 });
+		chartHumi = createGauge('chartHumi', 'Humidity', { min: 0, max: 100, yellowFrom: 60, redFrom: 80, unit: '%', value: 50 });
+		updateGauge(chartTemp, 25);
+		updateGauge(chartHumi, 50);
 	}
 </script>
 </head>
@@ -141,8 +130,8 @@
 	Row Count : <input type="text" id="rowCount" value="0" readonly style="width:150px"><br>
 	Byte Size : <input type="text" id="byteSize" value="0" readonly style="width:150px"><br>
 	<br>
-	<div id="chartTemp" style="width: 400px; height: 300px; float: left;"></div>
-	<div id="chartHumi" style="width: 400px; height: 300px; float: left;"></div>
+	<canvas id="chartTemp" width="400" height="300" style="float: left;"></canvas>
+	<canvas id="chartHumi" width="400" height="300" style="float: left;"></canvas>
 	<div style="clear: both;"></div>
 	<br>
 	<textarea id="logArea" readonly style="width:700px; height:300px; font-family:monospace; font-size:13px;"></textarea>

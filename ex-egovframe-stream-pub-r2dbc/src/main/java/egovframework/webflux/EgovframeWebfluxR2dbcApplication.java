@@ -11,6 +11,9 @@ import egovframework.webflux.repository.IdsRepository;
 import egovframework.webflux.repository.SampleRepository;
 import reactor.core.publisher.Flux;
 
+/**
+ * 데이터 스트림 발행(Publisher) 예제 애플리케이션
+ */
 @SpringBootApplication
 public class EgovframeWebfluxR2dbcApplication {
 
@@ -18,8 +21,9 @@ public class EgovframeWebfluxR2dbcApplication {
         SpringApplication.run(EgovframeWebfluxR2dbcApplication.class, args);
     }
 
+    /** 샘플 데이터 초기화 */
     @Bean
-    CommandLineRunner init(IdsRepository idsRepository, SampleRepository sampleRepository) {
+    public CommandLineRunner init(IdsRepository idsRepository, SampleRepository sampleRepository) {
         return args -> {
             idsRepository.deleteAll().doOnSuccess(result -> System.out.println("Ids Table Delete Ok!")).subscribe();
 

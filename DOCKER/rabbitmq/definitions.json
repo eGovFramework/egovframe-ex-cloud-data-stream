@@ -1,0 +1,14 @@
+{
+  "vhosts": [
+    { "name": "egov" }
+  ],
+  "exchanges": [
+    { "name": "sensor", "vhost": "egov", "type": "direct", "durable": true, "auto_delete": false, "internal": false, "arguments": {} }
+  ],
+  "queues": [
+    { "name": "sensor.q_temp_humi", "vhost": "egov", "durable": true, "auto_delete": false, "arguments": {} }
+  ],
+  "bindings": [
+    { "source": "sensor", "vhost": "egov", "destination": "sensor.q_temp_humi", "destination_type": "queue", "routing_key": "q_temp_humi", "arguments": {} }
+  ]
+}

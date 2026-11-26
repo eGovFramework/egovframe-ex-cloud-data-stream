@@ -17,7 +17,7 @@ elasticsearch 를 대체하는 opensearch, kibana 를 대체하는 opensearch-da
 ## 구동 (OpenSearch, OpenSearch Dashboards, Logstash)
 
 ```
-docker-compose up -d
+docker compose up -d
 ```
 
 ## Logstash 확인
@@ -37,7 +37,7 @@ Kafka 의 "egov-logs" 토픽을 구독하고 있다가, 이벤트를 수신하�
 
 input {
   kafka {
-    bootstrap_servers => "192.168.100.50:9092"
+    bootstrap_servers => "${KAFKA_BOOTSTRAP_SERVERS}"
     group_id => "logstash"
     topics => ["egov-logs"]
     consumer_threads => 1
@@ -59,10 +59,10 @@ output {
   stdout {}
 
   opensearch {
-    hosts => ["https://192.168.100.50:9200"]
+    hosts => ["${OPENSEARCH_HOSTS}"]
     index => "egov-logs-%{+YYYY.MM.dd}"
-    user => "admin"
-    password => "admin"
+    user => "${OPENSEARCH_USER}"
+    password => "${OPENSEARCH_PASSWORD}"
     ssl => true
     ssl_certificate_verification => false
   }
@@ -92,7 +92,7 @@ curl -k -u admin:'Egov2015!' "https://localhost:9200/_cat/indices/egov-logs-*?v"
 
 ## OpenSearch Dashboards 확인
 
-브라우저에서 다음 URL로 이동하여 admin / Egov2015! 로 접속한다.
+브라우저에서 다음 URL로 이동하여 admin / `OPENSEARCH_INITIAL_ADMIN_PASSWORD` 값(기본 예시 Egov2015!)으로 접속한다.
 
 ```
 http://localhost:5601/

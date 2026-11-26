@@ -14,7 +14,6 @@
 	
 	var wsocket;
 	function sendMessage() {
-		//wsocket = new WebSocket("ws://localhost:9000/echo-ws");
 		var serverUrl = $("#serverUrl").val();
 		alert("Call Websocket URL : "+serverUrl);
 		wsocket = new WebSocket(serverUrl);
@@ -36,7 +35,7 @@
 </head>
 <body>
 
-	Websocket Server URL : <input type="text" id="serverUrl" value="ws://192.168.100.60:9002/ws/echo" style="width:400px"><br>
+	Websocket Server URL : <input type="text" id="serverUrl" th:value="${websocketUrl}" style="width:400px"><br>
     Send Message : <input type="text" id="message">
     <input type="button" id="sendBtn" value="Send Message">
 </body>

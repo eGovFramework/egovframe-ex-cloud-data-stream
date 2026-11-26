@@ -121,3 +121,6 @@ hs_err_pid*
 _*.md
 
 .factorypath
+
+# Docker Compose 환경 변수 (.env.example 을 복사해 사용)
+.env

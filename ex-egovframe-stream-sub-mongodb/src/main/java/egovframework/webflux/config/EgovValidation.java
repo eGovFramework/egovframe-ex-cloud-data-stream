@@ -6,6 +6,9 @@ import egovframework.webflux.annotation.EgovNotNull;
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
 
+/**
+ * {@link EgovNotNull} 검증기
+ */
 public class EgovValidation implements ConstraintValidator<EgovNotNull, String> {
 
     @Override

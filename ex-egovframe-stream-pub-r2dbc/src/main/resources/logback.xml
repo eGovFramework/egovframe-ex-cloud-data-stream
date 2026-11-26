@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Configuration>
 
-	<!-- my_app_file.log 저장될 실제 디렉토리 위치 지정 -->
-	<property name="LOG_DIR" value="logs"></property>
+	<!-- 환경 변수로 재정의 (${변수:-기본값}) -->
+	<property name="LOG_DIR" value="${LOG_DIR:-logs}"></property>
+	<property name="KAFKA_BOOTSTRAP_SERVERS" value="${KAFKA_BOOTSTRAP_SERVERS:-192.168.100.60:9092}"></property>
 	<property name="LOG_FILE" value="my_app_file.log"></property>
 
 	<appender name="STDOUT"
@@ -12,11 +13,10 @@
 		</encoder>
 	</appender>
 
+	<!-- 파일 로그 : 일자/50MB 단위 롤링, 7일·2GB 보관 -->
 	<appender name="FILE"
 		class="ch.qos.logback.core.rolling.RollingFileAppender">
-		<!--로깅이 기록될 위치 -->
 		<file>${LOG_DIR}/${LOG_FILE}</file>
-		<!--로깅 파일이 특정 조건을 넘어가면 다른 파일로 만들어 준다. -->
 		<rollingPolicy
 			class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
 			<fileNamePattern>${LOG_DIR}/rolling/logFile.%d{yyyy-MM-dd}.%i.gz
@@ -31,43 +31,35 @@
 				%logger - %m%n</Pattern>
 		</encoder>
 	</appender>
-	
-	<!-- This is the kafkaAppender -->
-    <appender name="kafkaAppender" class="com.github.rahulsinghai.logback.kafka.KafkaAppender">
-        <!-- Kafka Appender configuration -->
 
-        <!-- Adding below line will add a fallback appender when kafka is not available. -->
+	<!-- Kafka 로그 발행 : egov-logs 토픽 → Logstash → OpenSearch -->
+    <appender name="kafkaAppender" class="com.github.rahulsinghai.logback.kafka.KafkaAppender">
+        <!-- Logstash grok 패턴과 동일한 형식 유지 -->
         <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
             <pattern>[%d{yyyy-MM-dd HH:mm:ss.SSS}] [%thread] %-5level %logger{36} - %msg</pattern>
         </encoder>
-        
-        <!-- we don't care how the log messages will be partitioned  -->
+
+        <!-- 파티션 키 미사용 -->
         <keyingStrategy class="com.github.rahulsinghai.logback.kafka.keying.NoKeyKeyingStrategy"/>
 
-        <!-- each <producerConfig> translates to regular kafka-client config (format: key=value) -->
-        <!-- producer configs are documented here: https://kafka.apache.org/documentation.html#newproducerconfigs -->
-        <!-- bootstrap.servers is the only mandatory producerConfig -->
-        <producerConfig>bootstrap.servers=192.168.100.60:9092</producerConfig>
-        
+        <!-- Kafka 프로듀서 설정(key=value) -->
+        <producerConfig>bootstrap.servers=${KAFKA_BOOTSTRAP_SERVERS}</producerConfig>
+
         <topic>egov-logs</topic>
-        
     </appender>
 
-    <!-- Logs asynchronously. It acts solely as an event dispatcher and must therefore reference another appender in order to do anything useful. -->
+    <!-- 비동기 발행 : 큐 잔여 20% 이하 시 INFO 이하 폐기, 큐가 가득 차면 대기 없이 폐기 -->
     <appender name="ASYNC" class="ch.qos.logback.classic.AsyncAppender">
-        <!-- When the blocking queue has 20% capacity remaining, it will drop events of level TRACE, DEBUG and INFO, keeping only events of level WARN and ERROR -->
         <discardingThreshold>20</discardingThreshold>
         <queueSize>256</queueSize>
-	    <!-- if neverBlock is set to true, the async appender discards messages when its internal queue is full -->
         <neverBlock>true</neverBlock>
-	    <!-- Mandatory: AsyncAppender requires another appender-ref to which logs will be forwarded asynchronously -->
         <appender-ref ref="kafkaAppender"/>
     </appender>
 
+	<!-- Kafka 발행 대상 로거 (그 외는 root 레벨, LOG_LEVEL 환경 변수로 재정의) -->
 	<logger name="java.sql" level="DEBUG">
-			<appender-ref ref="ASYNC"/>
+		<appender-ref ref="ASYNC"/>
 	</logger>
-	
 	<logger name="egovframework" level="DEBUG">
 		<appender-ref ref="ASYNC"/>
 	</logger>
@@ -75,14 +67,13 @@
 		<appender-ref ref="ASYNC"/>
 	</logger>
 	<logger name="jdbc.sqltiming" level="DEBUG" />
-	<logger name="org.springframework" level="DEBUG">
+	<logger name="org.springframework" level="INFO">
 		<appender-ref ref="ASYNC"/>
 	</logger>
 
-	<root level="DEBUG">
+	<root level="${LOG_LEVEL:-INFO}">
 		<appender-ref ref="STDOUT" />
 		<appender-ref ref="FILE"/>
-		<!-- <appender-ref ref="ASYNC"/> -->
 	</root>
 
 </Configuration>

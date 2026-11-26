@@ -16,6 +16,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Sinks;
 
+/**
+ * 구독 결과 화면 및 센서 수동 입력(ping) 처리
+ */
 @EgovController
 @Slf4j
 @RequiredArgsConstructor
@@ -51,10 +54,13 @@ public class EgovSocketController {
     }
 
     @GetMapping("/echo")
-    public String echo() {
+    public String echo(Model model) {
+        String websocketUrl = String.format("ws://%s:%s/ws/echo", websocketHost, serverPort);
+        model.addAttribute("websocketUrl", websocketUrl);
         return "egovEcho";
     }
 
+    /** 센서 없이 테스트할 때 온습도 값을 WebSocket 으로 직접 전달 */
     @ResponseBody
     @PostMapping(value="/pingSensor", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResultVO pingSensor(EgovTempHumiDTO tempHumiVO) {
@@ -67,12 +73,10 @@ public class EgovSocketController {
 		} catch (JsonProcessingException e) {
 			log.error(e.getMessage());
 		}
-    	log.info("===>>> "+resultJson);
-    	//String message = "hello";
+    	log.info("===>>> {}", resultJson);
     	sink.emitNext(resultJson, Sinks.EmitFailureHandler.FAIL_FAST);
     	
     	return result;
     }
 
-    
 }

@@ -8,7 +8,7 @@ public class SampleDefaultVO {
     /** 검색조건 */
     private String searchCondition = "";
 
-    /** 검색Keyword */
+    /** 검색어 */
     private String searchKeyword = "";
 
 }

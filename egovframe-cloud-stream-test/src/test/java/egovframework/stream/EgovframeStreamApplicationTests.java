@@ -1,4 +1,4 @@
-package egovframework.webflux;
+package egovframework.stream;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;

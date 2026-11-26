@@ -1,104 +1,71 @@
+# 접속 정보는 환경 변수로 재정의 (${변수:기본값}, 목록은 README 참고)
 server:
-  port: 9002
+  port: ${SERVER_PORT:9002}
 
 spring:
   data:
     mongodb:
-      database: com
-      uri: mongodb://com:com01@localhost:27017/com
+      database: ${MONGODB_DATABASE:com}
+      uri: ${MONGODB_URI:mongodb://com:com01@localhost:27017/com}
 
   rabbitmq:
-    host: 192.168.100.60
-    port: 5672
-    username: guest
-    password: guest
-    virtual-host: egov
+    host: ${RABBITMQ_HOST:192.168.100.60}
+    port: ${RABBITMQ_PORT:5672}
+    username: ${RABBITMQ_USERNAME:guest}
+    password: ${RABBITMQ_PASSWORD:guest}
+    virtual-host: ${RABBITMQ_VHOST:egov}
 
   cloud:
+    # 바인딩 대상 함수
+    function:
+      definition: sensorThermo;fileLine;historyDb;trainApi
+
     stream:
       kafka:
         binder:
           autoCreateTopics: false
           autoAddPartitions: false
-          # Apache Kafka 4.x KRaft 모드에서는 Zookeeper 미사용
-          #zkNodes: 192.168.100.60
-          brokers: 192.168.100.60
-          # Kafka 클라이언트 텔레메트리 비활성화 (브로커에 메트릭 전송 안 함)
+          brokers: ${KAFKA_BOOTSTRAP_SERVERS:192.168.100.60:9092}
+          # 클라이언트 텔레메트리 전송 비활성화
           configuration:
             enable.metrics.push: false
-        
+
       bindings:
-#        output:
-#          destination: sample-topic
-#        input:
-#          destination: sample-topic
-
-        basicProducer-out-0:
-          destination: test-topic
-          binder: kafka
-        basicConsumer-in-0:
-          destination: test-topic
-          binder: kafka
-
+        # IoT 온습도 센서 (큐: sensor.q_temp_humi)
         sensorThermo-in-0:
           destination: sensor
           group: q_temp_humi
           binder: rabbit
 
+        # 파일 라인
         fileLine-in-0:
           destination: line-topic
           binder: kafka
 
+        # DB 처리 이력
         historyDb-in-0:
           destination: db-topic
           binder: kafka
 
+        # Open API(지하철 실시간 위치)
         trainApi-in-0:
           destination: api-topic
           binder: kafka
 
-#        "sample-topic-in":
-#          binder: kafka
-#          destination: sample-topic
-
-#        "sensor-in":
-#          binder: rabbit
-#          destination: sensor
-
-#      rabbit:
-#        bindings:
-#          sensorThermo-in-0:
-#            consumer:
-#              queueNameGroupOnly: true
-#              declareExchange: false
-#              bindQueue: false
-
-      # 큐 이름을 sensor.q_temp_humi (destination.group) 형태로 사용
+      # 사전 생성된 Exchange/Queue 사용 (선언·바인딩 생략)
       rabbit:
         bindings:
           sensorThermo-in-0:
             consumer:
-              # queueNameGroupOnly: false 가 기본값이므로 생략 가능
               declareExchange: false
               bindQueue: false
 
-    function:
-      definition: sensorThermo; fileLine; historyDb; trainApi
-
-
-  main:
-    allow-bean-definition-overriding: true
-
 logging:
   level:
-    org:
-      springframework:
-        data:
-          mongodb: debug
-    egovframework:
-      webflux:
-        stream: debug
+    '[org.springframework.data.mongodb]': DEBUG
+    '[egovframework.webflux.stream]': DEBUG
 
 egov:
   websocket:
-    host: 192.168.100.60
+    # 브라우저에서 접속할 WebSocket 호스트
+    host: ${WEBSOCKET_HOST:192.168.100.60}

@@ -2,6 +2,7 @@ package egovframework.webflux.stream.aspect;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.ProceedingJoinPoint;
@@ -18,12 +19,16 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Component;
 
 import egovframework.webflux.entity.Sample;
+import egovframework.webflux.repository.SampleRepository;
 import egovframework.webflux.stream.aspect.dto.SampleDTO;
 import egovframework.webflux.stream.aspect.dto.SampleListDTO;
 import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+/**
+ * Repository 호출을 가로채 처리 이력을 db-topic 으로 발행
+ */
 @Slf4j
 @Component("aspectUsingAnnotation")
 @Aspect
@@ -34,7 +39,7 @@ public class AspectDbHistory {
 
     @Pointcut("execution(public * egovframework.webflux..*Repository.*(..))")
     public void targetMethod() {
-        // pointcut annotation 값을 참조하기 위한 dummy method
+        // pointcut 참조용
     }
 
 	@Before("targetMethod()")
@@ -46,7 +51,7 @@ public class AspectDbHistory {
         String className = thisJoinPoint.getTarget().getClass().getSimpleName();
         String methodName = thisJoinPoint.getSignature().getName();
 
-        // 현재 class, method 정보 및 method arguments 로깅
+        // 클래스·메소드·인자 로깅
         StringBuffer buf = new StringBuffer();
         buf.append("\n== AspectUsingAnnotation.beforeTargetMethod : ["
             + className + "." + methodName + "()] ==");
@@ -56,13 +61,10 @@ public class AspectDbHistory {
             buf.append("\n - arg ");
             buf.append(argCount++);
             buf.append(" : ");
-            // Java 17 모듈 시스템 호환을 위해 toString() 사용
             buf.append(String.valueOf(obj));
         }
 
-        // 대상 클래스의 logger 를 사용하여 method arguments 로깅
-        // 하였음.
-        	log.debug(buf.toString());
+        log.debug(buf.toString());
     }
 
     @After("targetMethod()")
@@ -79,8 +81,7 @@ public class AspectDbHistory {
 
         buf.append("\n");
 
-        // 결과값이 List 이면 size 와 전체 List 데이터를 풀어 출력
-        // (성능상 사용않는 것이 좋음)
+        // List 결과는 건수와 전체 데이터 출력 (성능상 운영 환경에서는 비권장)
         if (retVal instanceof List) {
             List<?> resultList = (List<?>) retVal;
             buf.append("resultList size : " + resultList.size() + "\n");
@@ -88,15 +89,9 @@ public class AspectDbHistory {
                 buf.append(String.valueOf(oneRow));
                 buf.append("\n");
             }
-        } else {
-            // buf.append(String.valueOf(retVal));
         }
 
-        // 대상 클래스의 logger 를 사용하여 결과값 로깅
-        // 하였음.
         log.debug(buf.toString());
-
-        // return value 의 변경은 불가함에 유의!
     }
 
     @AfterThrowing(pointcut = "targetMethod()", throwing = "exception")
@@ -105,170 +100,98 @@ public class AspectDbHistory {
     	log.debug("AspectUsingAnnotation.afterThrowingTargetMethod executed.");
     	log.error("에러가 발생했습니다. {}", exception);
 
-        // 원본 exception 을 wrapping 하고 user-friendly 한
-        // 메시지를 설정하여 새로운 Exception 으로 re-throw
+        // 원본 예외를 감싸 재전달
         throw new RuntimeException("에러가 발생했습니다.", exception);
-
-        // 여기서는 간단하게 작성하였지만 일반적으로 messageSource 를 사용한
-        // locale 에 따른 다국어 처리 및 egov. exceptionHandler
-        // 를 확장한 Biz. (ex. email 공지 등) 기능 적용이 가능함.
     }
 
+    /**
+     * 반환 Publisher 에 이력 발행을 연결 (별도 구독 없이 실제 수행 시점에 1회 실행·발행).
+     * 수행 시간은 구독부터 완료까지 측정
+     */
     @Around("targetMethod()")
+    @SuppressWarnings("unchecked")
     public Object aroundTargetMethod(ProceedingJoinPoint thisJoinPoint) throws Throwable {
-    	
-    	log.debug("AspectUsingAnnotation.aroundTargetMethod start.");
-        long time1 = System.currentTimeMillis();
         Object retVal = thisJoinPoint.proceed();
 
-        long time2 = System.currentTimeMillis();
-        long elapsedTimeMills = time2 - time1;
-        log.debug("AspectUsingAnnotation.aroundTargetMethod end. Time({})", elapsedTimeMills);
-
-        @SuppressWarnings("unused")
-		Class<? extends Object> clazz = thisJoinPoint.getTarget().getClass();
-        //String className = thisJoinPoint.getTarget().getClass().getSimpleName();
-        String className = thisJoinPoint.getSignature().getDeclaringTypeName();
-        String methodName = thisJoinPoint.getSignature().getName();
-
-        // 현재 class, method 정보 및 method arguments 로깅
-        StringBuffer buf = new StringBuffer();
-        buf.append("\n== AspectUsingAnnotation.afterReturningTargetMethod : ["
-            + className + "." + methodName + "()] ==");
-		Object[] args = thisJoinPoint.getArgs();
-		log.debug("===>>> args.length : "+args.length);
-        
-        switch(methodName) {
-        	case "findAll":
-
-        		Sort sort = null;
-        		if (args.length > 0) { 
-        			sort = (Sort) args[0];
-        			log.debug("===>>> sort : "+sort.toString());
-        		}
-        		processSearchHistory(retVal, elapsedTimeMills, className, methodName, sort);
-
-	            /*
-	            List<Sample> resultList = result.collectList().block();
-	            if (resultList.size() > 0) {
-	            	log.debug("===>>> resultList : "+resultList);
-            		streamBridge.send("historyDb", resultList.get(0));
-	            }
-	            */
-	            //Mono<List<Sample>> resultList = result.collectList();
-	        	//log.debug("===>>> result : "+resultList);
-	            break;
-        	case "findById":
-        		if (args.length > 0) { 
-        			log.debug("===>>> param : "+String.valueOf(args[0]));
-        			
-        			processViewHistory(retVal, elapsedTimeMills, className, methodName);
-        		}
-        		break;
-        	case "findBySampleIdContaining":
-        		if (args.length > 0) {
-        			Sample search = new Sample();
-        			search.setSampleId(args[0].toString());
-        			
-        			log.debug("===>>> param : "+String.valueOf(args[0]));
-        			
-        			processSearchHistory(retVal, elapsedTimeMills, className, methodName, search);
-        		}
-        		break;
-        	case  "findByNameContaining":
-        		if (args.length > 0) {
-        			Sample search = new Sample();
-        			search.setName(args[0].toString());
-        			
-        			log.debug("===>>> param : "+String.valueOf(args[0]));
-        			
-        			processSearchHistory(retVal, elapsedTimeMills, className, methodName, search);
-        		}
-        		break;
-        		
-        	case "save":
-        		if (args.length > 0 && args[0] instanceof Sample content) { 
-        			log.debug("===>>> result : "+String.valueOf(content));
-        			
-        			processChangeHistory(elapsedTimeMills, className, methodName, content);
-        		}
-
-        		break;
-        	case "delete":
-        		if (args.length > 0) { 
-        			log.debug("===>>> param : "+String.valueOf(args[0]));
-        			Sample content = (Sample) args[0];
-        			processChangeHistory(elapsedTimeMills, className, methodName, content);
-
-        		}
-        		break;
+        // Sample 리포지토리만 이력 대상
+        if (!(thisJoinPoint.getThis() instanceof SampleRepository)) {
+            return retVal;
         }
 
-        return retVal;
+        String className = thisJoinPoint.getSignature().getDeclaringTypeName();
+        String methodName = thisJoinPoint.getSignature().getName();
+        Object[] args = thisJoinPoint.getArgs();
+        log.debug("===>>> {}.{}() args.length : {}", className, methodName, args.length);
+
+        switch (methodName) {
+            case "findAll": {
+                Sort sort = args.length > 0 && args[0] instanceof Sort ? (Sort) args[0] : null;
+                return withSearchHistory((Flux<Sample>) retVal, className, methodName, null, sort);
+            }
+            case "findBySampleIdContaining": {
+                Sample search = new Sample();
+                search.setSampleId(String.valueOf(args[0]));
+                return withSearchHistory((Flux<Sample>) retVal, className, methodName, search, null);
+            }
+            case "findByNameContaining": {
+                Sample search = new Sample();
+                search.setName(String.valueOf(args[0]));
+                return withSearchHistory((Flux<Sample>) retVal, className, methodName, search, null);
+            }
+            case "findById":
+                return withHistory((Mono<Sample>) retVal, "view", className, methodName, null);
+            case "save":
+                return withHistory((Mono<Sample>) retVal, "change", className, methodName, null);
+            case "delete":
+                if (args.length > 0 && args[0] instanceof Sample) {
+                    return withHistory((Mono<Sample>) retVal, "change", className, methodName, (Sample) args[0]);
+                }
+                return retVal;
+            default:
+                return retVal;
+        }
     }
 
-	private void processViewHistory(Object retVal, long elapsedTimeMills, String className, String methodName) {
-		@SuppressWarnings("unchecked")
-		Mono<Sample> result = (Mono<Sample>)retVal;
-		result.subscribe(content -> {
-			SampleDTO sampleDTO = new SampleDTO();
-			sampleDTO.setCategory("view");
-			sampleDTO.setContent(content);
-			sampleDTO.setClassName(className);
-			sampleDTO.setMethodName(methodName);
-			sampleDTO.setElapsedMills(elapsedTimeMills);
-			
-			streamBridge.send("historyDb", sampleDTO);
-		});
-	}
+    /** 단건 조회·변경 이력 (delete 처럼 결과가 없으면 fallback 을 내용으로 발행) */
+    private Mono<Sample> withHistory(Mono<Sample> result, String category, String className, String methodName, Sample fallback) {
+        return Mono.defer(() -> {
+            long start = System.currentTimeMillis();
+            AtomicReference<Sample> content = new AtomicReference<>(fallback);
+            return result.doOnNext(content::set).doOnSuccess(ignored -> {
+                if (content.get() == null) {
+                    return;
+                }
+                SampleDTO sampleDTO = new SampleDTO();
+                sampleDTO.setCategory(category);
+                sampleDTO.setContent(content.get());
+                sampleDTO.setClassName(className);
+                sampleDTO.setMethodName(methodName);
+                sampleDTO.setElapsedMills(System.currentTimeMillis() - start);
+                streamBridge.send("historyDb", sampleDTO);
+            });
+        });
+    }
 
-	private void processChangeHistory(long elapsedTimeMills, String className, String methodName, Sample content) {
-		SampleDTO sampleDTO = new SampleDTO();
-		sampleDTO.setCategory("change");
-		sampleDTO.setContent(content);
-		sampleDTO.setClassName(className);
-		sampleDTO.setMethodName(methodName);
-		sampleDTO.setElapsedMills(elapsedTimeMills);
-		
-		streamBridge.send("historyDb", sampleDTO);
-	}
-
-	private void processSearchHistory(Object retVal, long elapsedTimeMills, String className, String methodName, Sort sort) {
-		processSearchHistory(retVal, elapsedTimeMills, className, methodName, null, sort);
-	}
-
-	private void processSearchHistory(Object retVal, long elapsedTimeMills, String className, String methodName, Sample search) {
-		processSearchHistory(retVal, elapsedTimeMills, className, methodName, search, null);
-	}
-
-	private void processSearchHistory(Object retVal, long elapsedTimeMills, String className, String methodName, Sample search, Sort sort) {
-		@SuppressWarnings("unchecked")
-		Flux<Sample> result = (Flux<Sample>)retVal;
-		List<Sample> resultList = new ArrayList<>();
-		result.subscribe(sample -> {
-			// toString()으로 출력 - 성능상 사용않는 것이 좋음
-			log.debug("===>>> result : "+String.valueOf(sample));
-			resultList.add(sample);
-		    //streamBridge.send("historyDb", sample);
-		});
-		/*
-		if (resultList.size() > 0) {
-			log.debug("===>>> resultList : "+resultList);
-			streamBridge.send("historyDb", resultList);
-		}*/
-		if (resultList.size() > 0) {
-		    SampleListDTO sampleListDTO = new SampleListDTO();
-		    sampleListDTO.setCategory("list");
-		    sampleListDTO.setContentList(resultList);
-		    sampleListDTO.setClassName(className);
-		    sampleListDTO.setMethodName(methodName);
-		    sampleListDTO.setElapsedMills(elapsedTimeMills);
-		    if (search != null) sampleListDTO.setSearch(search);
-		    if (sort !=null) sampleListDTO.setSort(sort);
-
-			log.debug("===>>> sampleListDTO : "+sampleListDTO);
-			streamBridge.send("historyDb", sampleListDTO);
-		}
-	}
+    /** 목록·검색 이력 (결과가 있을 때만 발행) */
+    private Flux<Sample> withSearchHistory(Flux<Sample> result, String className, String methodName, Sample search, Sort sort) {
+        return Flux.defer(() -> {
+            long start = System.currentTimeMillis();
+            List<Sample> resultList = new ArrayList<>();
+            return result.doOnNext(sample -> resultList.add(sample)).doOnComplete(() -> {
+                if (resultList.isEmpty()) {
+                    return;
+                }
+                SampleListDTO sampleListDTO = new SampleListDTO();
+                sampleListDTO.setCategory("list");
+                sampleListDTO.setContentList(resultList);
+                sampleListDTO.setClassName(className);
+                sampleListDTO.setMethodName(methodName);
+                sampleListDTO.setElapsedMills(System.currentTimeMillis() - start);
+                sampleListDTO.setSearch(search);
+                sampleListDTO.setSort(sort);
+                streamBridge.send("historyDb", sampleListDTO);
+            });
+        });
+    }
 
 }

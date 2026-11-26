@@ -14,38 +14,35 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Sinks;
 
+/**
+ * line-topic 수신 → WebSocket(/ws/file) 전달
+ */
 @Slf4j
 @RequiredArgsConstructor
 @Configuration
 public class EgovConsumerFileLine {
 
-	private final Sinks.Many<String> sinkFile;
-	
+    private final Sinks.Many<String> sinkFile;
+
     @Bean
-    Consumer<String> fileLine() {
-    	
-    	Consumer<String> fileLineConsumer = (payload) -> {
-    		log.debug("===> Received File message: " + payload);
-    		
-    		ObjectMapper mapper = new ObjectMapper();
-    		
-    		Map<String, Object> fileStreamLineMap = new HashMap<>();
-    		fileStreamLineMap.put("category", "file_line");
-    		fileStreamLineMap.put("lineData", payload);
-    		
-    		// Map -> JSON
-    		String result = "{\"category\":\"\"}";
+    public Consumer<String> fileLine() {
+        return payload -> {
+            log.debug("===> Received File message: {}", payload);
+
+            Map<String, Object> fileStreamLineMap = new HashMap<>();
+            fileStreamLineMap.put("category", "file_line");
+            fileStreamLineMap.put("lineData", payload);
+
+            String result = "{\"category\":\"\"}";
             try {
-    			result = mapper.writeValueAsString(fileStreamLineMap);
-    		} catch (JsonProcessingException e) {
-    			e.printStackTrace();
-    		}
-            log.debug("websocket send file info : "+result);
-            
-    		sinkFile.emitNext(result, Sinks.EmitFailureHandler.FAIL_FAST);
-    	};
-    	
-    	return fileLineConsumer;
-    	
+                result = new ObjectMapper().writeValueAsString(fileStreamLineMap);
+            } catch (JsonProcessingException e) {
+                log.error(e.getMessage());
+            }
+            log.debug("websocket send file info : {}", result);
+
+            sinkFile.emitNext(result, Sinks.EmitFailureHandler.FAIL_FAST);
+        };
     }
+
 }

@@ -53,28 +53,26 @@ public class SampleController {
         return "egovSampleRegister";
     }
 
+    /** 저장 완료 후 목록으로 이동 (오류는 그대로 전파) */
     @PostMapping("/sample/add")
-    public String add(@ModelAttribute @Valid SampleVO sampleVO, BindingResult bindingResult) {
+    public Mono<String> add(@ModelAttribute @Valid SampleVO sampleVO, BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
-            return "egovSampleRegister";
+            return Mono.just("egovSampleRegister");
         }
-        this.service.add(sampleVO).subscribe();
-        return "redirect:/";
+        return this.service.add(sampleVO).thenReturn("redirect:/");
     }
 
     @PostMapping("/sample/update")
-    public String update(@ModelAttribute @Valid SampleVO sampleVO, BindingResult bindingResult) {
+    public Mono<String> update(@ModelAttribute @Valid SampleVO sampleVO, BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
-            return "egovSampleRegister";
+            return Mono.just("egovSampleRegister");
         }
-        this.service.update(sampleVO.getId(), sampleVO).subscribe();
-        return "redirect:/";
+        return this.service.update(sampleVO.getId(), sampleVO).thenReturn("redirect:/");
     }
 
     @DeleteMapping("/sample/{id}")
-    public String delete(@PathVariable int id) {
-        this.service.delete(id).subscribe();
-        return "redirect:/";
+    public Mono<String> delete(@PathVariable int id) {
+        return this.service.delete(id).thenReturn("redirect:/");
     }
 
 }

@@ -15,7 +15,6 @@
 
 	$(document).ready(function() {
 
-		//wsocket = new WebSocket("ws://localhost:9000/echo-ws");
 		var serverUrl = $("#serverUrl").val();
 		appendLog("Call Websocket URL : " + serverUrl);
 		wsocket = new WebSocket(serverUrl);

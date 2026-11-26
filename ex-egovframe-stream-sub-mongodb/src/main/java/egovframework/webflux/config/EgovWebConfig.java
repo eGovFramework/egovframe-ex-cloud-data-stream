@@ -21,6 +21,9 @@ import org.thymeleaf.spring6.view.reactive.ThymeleafReactiveViewResolver;
 import org.thymeleaf.templatemode.TemplateMode;
 import org.thymeleaf.templateresolver.ITemplateResolver;
 
+/**
+ * WebFlux 설정 (메시지, Thymeleaf 뷰, 정적 리소스)
+ */
 @Configuration
 public class EgovWebConfig extends WebFluxConfigurationSupport {
 
@@ -32,7 +35,7 @@ public class EgovWebConfig extends WebFluxConfigurationSupport {
     }
 
     @Bean
-    MessageSource messageSource() {
+    public MessageSource messageSource() {
         ResourceBundleMessageSource messageSource = new ResourceBundleMessageSource();
         messageSource.setBasename("messages");
         messageSource.setDefaultEncoding("UTF-8");
@@ -41,12 +44,12 @@ public class EgovWebConfig extends WebFluxConfigurationSupport {
     }
 
     @Bean
-    MessageSourceAccessor messageSourceAccessor() {
+    public MessageSourceAccessor messageSourceAccessor() {
         return new MessageSourceAccessor(messageSource());
     }
 
     @Bean
-    ITemplateResolver thymeleafTemplateResolver() {
+    public ITemplateResolver thymeleafTemplateResolver() {
         final SpringResourceTemplateResolver resolver = new SpringResourceTemplateResolver();
         resolver.setApplicationContext(this.applicationContext);
         resolver.setPrefix("classpath:templates/thymeleaf/");
@@ -58,14 +61,14 @@ public class EgovWebConfig extends WebFluxConfigurationSupport {
     }
 
     @Bean
-    ISpringWebFluxTemplateEngine thymeleafTemplateEngine() {
+    public ISpringWebFluxTemplateEngine thymeleafTemplateEngine() {
         SpringWebFluxTemplateEngine templateEngine = new SpringWebFluxTemplateEngine();
         templateEngine.setTemplateResolver(thymeleafTemplateResolver());
         return templateEngine;
     }
 
     @Bean
-    ThymeleafReactiveViewResolver thymeleafReactiveViewResolver() {
+    public ThymeleafReactiveViewResolver thymeleafReactiveViewResolver() {
         ThymeleafReactiveViewResolver viewResolver = new ThymeleafReactiveViewResolver();
         viewResolver.setTemplateEngine(thymeleafTemplateEngine());
         return viewResolver;
@@ -86,21 +89,13 @@ public class EgovWebConfig extends WebFluxConfigurationSupport {
                 .resourceChain(false);
     }
 
-    /*
-    @Bean
-    public LocalValidatorFactoryBean getValidator() {
-        LocalValidatorFactoryBean factoryBean = new LocalValidatorFactoryBean();
-        factoryBean.setValidationMessageSource(messageSource());
-        return factoryBean;
-    }*/
-
     /**
-     * MIME 스니핑, 클릭재킹 등을 완화하는 기본 보안 응답 헤더를 모든 응답에 추가한다.
-     * (데모 페이지가 인라인 스크립트를 사용하므로 학습 기능을 깨뜨리는 CSP는 적용하지 않는다.)
+     * MIME 스니핑, 클릭재킹 등을 완화하는 기본 보안 응답 헤더 추가
+     * (예제 화면이 인라인 스크립트를 사용하므로 CSP 는 적용하지 않음)
      */
     @Bean
     @Order(Ordered.HIGHEST_PRECEDENCE)
-    WebFilter securityHeadersWebFilter() {
+    public WebFilter securityHeadersWebFilter() {
         return (exchange, chain) -> {
             HttpHeaders headers = exchange.getResponse().getHeaders();
             headers.add("X-Content-Type-Options", "nosniff");

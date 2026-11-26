@@ -2,6 +2,9 @@ package egovframework.webflux.file;
 
 import java.io.File;
 
+/**
+ * FileLineWatcher 수동 실행 예제 (30초간 감시)
+ */
 public class TestLoadTextFileRealtime {
 
 	public static void main(String[] args) {
@@ -11,7 +14,7 @@ public class TestLoadTextFileRealtime {
 	
 	public static void loadFileRealtime1() {
 
-		File file = new File("/Volumes/EXSSD/EGOV/temp/txtData2.csv");
+		File file = new File("../ex-egovframe-stream-pub-r2dbc/src/main/resources/file/txtData2.csv");
 		FileLineWatcher watcher = new FileLineWatcher(file);
 		Thread thread = new Thread(watcher);
 		thread.setDaemon(true);
@@ -20,11 +23,9 @@ public class TestLoadTextFileRealtime {
 		try {
 			Thread.sleep(30000);
 		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			Thread.currentThread().interrupt();
 		}
-		
-		// 만약 종료하고 싶다면
+
 		watcher.stop();
 	}
 

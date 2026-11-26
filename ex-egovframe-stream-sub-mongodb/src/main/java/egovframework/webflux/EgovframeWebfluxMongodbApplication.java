@@ -7,6 +7,9 @@ import org.springframework.context.annotation.Bean;
 
 import egovframework.webflux.repository.RealtimePositionRepository;
 
+/**
+ * 데이터 스트림 구독(Subscriber) 예제 애플리케이션
+ */
 @SpringBootApplication
 public class EgovframeWebfluxMongodbApplication {
 
@@ -14,11 +17,11 @@ public class EgovframeWebfluxMongodbApplication {
         SpringApplication.run(EgovframeWebfluxMongodbApplication.class, args);
     }
 
+    /** 기동 시 수집 데이터 초기화 */
     @Bean
-    CommandLineRunner init(RealtimePositionRepository realtimePositionRepository) {
+    public CommandLineRunner init(RealtimePositionRepository realtimePositionRepository) {
         return args -> {
-        	realtimePositionRepository.deleteAll().doOnSuccess(result -> System.out.println("RealtimePositon Table Delete Ok!")).subscribe();
-
+        	realtimePositionRepository.deleteAll().doOnSuccess(result -> System.out.println("RealtimePosition Table Delete Ok!")).subscribe();
         };
     }
 

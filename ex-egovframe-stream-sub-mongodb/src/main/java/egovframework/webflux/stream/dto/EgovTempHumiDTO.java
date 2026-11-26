@@ -4,18 +4,17 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 
+/**
+ * 온습도 센서 측정값.
+ * 측정 범위 - DHT-22 : -40~80℃, 0~100% / DHT-11 : 0~50℃, 20~80%
+ */
 @Getter
 @Setter
 @ToString
 public class EgovTempHumiDTO {
 
-	// DHT-22 
-	// 측정 가능 온도 : -40~80C
-	// 측정 가능 습도 : 0~100%
-	// DHT-11 
-	// 측정 가능 온도 : 0~50C
-	// 측정 가능 습도 : 20~80%
-		
-	float temp = -150.0f;
-	float humidity = -150.0f; 
+    /** 초기값 -150 : 미수신 */
+    float temp = -150.0f;
+    float humidity = -150.0f;
+
 }

@@ -12,6 +12,9 @@ import org.springframework.web.reactive.socket.WebSocketSession;
 import reactor.core.publisher.Mono;
 import reactor.core.publisher.Sinks;
 
+/**
+ * DB 처리 이력 메시지를 WebSocket 클라이언트로 전달
+ */
 @Component
 public class DbWebSocketHandler implements WebSocketHandler {
 
@@ -34,13 +37,5 @@ public class DbWebSocketHandler implements WebSocketHandler {
         
     	return session.send(p);
     }
-
-//    private Mono<Void> doSend(WebSocketSession session, Publisher<WebSocketMessage> output) {
-//    	return session.send(
-//        		session.receive()
-//                .doOnNext(WebSocketMessage::retain)// Use retain() for Reactor Netty
-//                .map(m -> session.textMessage("received:" + m.getPayloadAsText()))
-//                );
-//    }
 
 }

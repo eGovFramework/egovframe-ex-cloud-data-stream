@@ -9,6 +9,9 @@ import java.lang.annotation.Target;
 import org.springframework.core.annotation.AliasFor;
 import org.springframework.stereotype.Repository;
 
+/**
+ * 표준프레임워크 리포지토리 스테레오타입
+ */
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
 @Documented

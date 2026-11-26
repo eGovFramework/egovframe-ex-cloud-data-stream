@@ -13,35 +13,29 @@ import egovframework.webflux.stream.api.entity.RealtimePosition;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+/**
+ * api-topic(지하철 실시간 위치) 수신 → MongoDB 저장
+ */
 @Slf4j
 @RequiredArgsConstructor
 @Configuration
 public class EgovConsumerTrainApi {
 
     @Bean
-    Consumer<List<RealtimePositionDTO>> trainApi(RealtimePositionRepository realtimePositionRepository) {
-    	
-    	Consumer<List<RealtimePositionDTO>> trainApiConsumer = (payload) -> {
-    		log.debug("===> Received Train API message: " + payload);
-    		
-    		long currentTimeStamp = System.currentTimeMillis();
-    		
-    		RealtimePosition realtimePosition = new RealtimePosition();
-    		
-    		for ( RealtimePositionDTO realtimePositionDTO : payload ) {
-                realtimePosition.setReceivedTimeStamp(currentTimeStamp);
-    			log.debug("===> realtimePositionDTO : " + realtimePositionDTO);
-    			
+    public Consumer<List<RealtimePositionDTO>> trainApi(RealtimePositionRepository realtimePositionRepository) {
+        return payload -> {
+            log.debug("===> Received Train API message: {}", payload);
+
+            long currentTimeStamp = System.currentTimeMillis();
+            for (RealtimePositionDTO realtimePositionDTO : payload) {
+                RealtimePosition realtimePosition = new RealtimePosition();
                 BeanUtils.copyProperties(realtimePositionDTO, realtimePosition);
-    			log.debug("===> realtimePosition : " + realtimePosition);
+                realtimePosition.setReceivedTimeStamp(currentTimeStamp);
+                log.debug("===> realtimePosition : {}", realtimePosition);
 
-        		realtimePositionRepository.save(realtimePosition).subscribe();
-
-    		}
-    		
-    	};
-    	
-    	return trainApiConsumer;
-    	
+                realtimePositionRepository.save(realtimePosition).subscribe();
+            }
+        };
     }
+
 }

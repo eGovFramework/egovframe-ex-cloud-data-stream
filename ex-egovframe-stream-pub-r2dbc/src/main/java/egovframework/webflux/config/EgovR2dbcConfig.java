@@ -12,21 +12,24 @@ import io.r2dbc.h2.H2ConnectionFactory;
 import io.r2dbc.h2.H2ConnectionOption;
 import io.r2dbc.spi.ConnectionFactory;
 
+/**
+ * R2DBC(H2 인메모리) 설정 및 스키마 초기화
+ */
 @Configuration
 @EnableR2dbcRepositories(basePackages={"egovframework.webflux.repository"})
 public class EgovR2dbcConfig {
 
     @Bean
-    ConnectionFactory connectionFactory() {
+    public ConnectionFactory connectionFactory() {
         return new H2ConnectionFactory(H2ConnectionConfiguration.builder()
                 .inMemory("sampledb")
-                .property(H2ConnectionOption.DB_CLOSE_DELAY,"-1") // DB 연결을 닫아도 VM이 유지되는 동안 Content 유지
+                .property(H2ConnectionOption.DB_CLOSE_DELAY,"-1") // 연결 종료 후에도 데이터 유지
                 .username("sa")
                 .build());
     }
 
     @Bean
-    ConnectionFactoryInitializer initializer(ConnectionFactory connectionFactory) {
+    public ConnectionFactoryInitializer initializer(ConnectionFactory connectionFactory) {
         ConnectionFactoryInitializer initializer = new ConnectionFactoryInitializer();
         initializer.setConnectionFactory(connectionFactory);
         initializer.setDatabasePopulator(new ResourceDatabasePopulator(new ClassPathResource("db/sampledb.sql")));

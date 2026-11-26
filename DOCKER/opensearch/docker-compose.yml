@@ -7,41 +7,44 @@ services:
       - node.name=opensearch
       - discovery.seed_hosts=opensearch
       - cluster.initial_master_nodes=opensearch
-      - bootstrap.memory_lock=true # along with the memlock settings below, disables swapping
-      - "OPENSEARCH_JAVA_OPTS=-Xms512m -Xmx512m" # minimum and maximum Java heap size, recommend setting both to 50% of system RAM
-      # OpenSearch 2.12+ 보안 플러그인 초기 admin 패스워드 설정 (개발/테스트용 예시)
-      - OPENSEARCH_INITIAL_ADMIN_PASSWORD=Egov2015!
+      - bootstrap.memory_lock=true # 스왑 방지 (ulimits.memlock 과 함께 사용)
+      - "OPENSEARCH_JAVA_OPTS=-Xms512m -Xmx512m" # 힙 크기 (최소·최대 동일 권장)
+      # 초기 admin 비밀번호 (2.12+ 필수, 환경 변수로 재정의)
+      - OPENSEARCH_INITIAL_ADMIN_PASSWORD=${OPENSEARCH_INITIAL_ADMIN_PASSWORD:-Egov2015!}
     ulimits:
       memlock:
         soft: -1
         hard: -1
       nofile:
-        soft: 65536 # maximum number of open files for the OpenSearch user, set to at least 65536 on modern systems
+        soft: 65536 # 최대 오픈 파일 수
         hard: 65536
     volumes:
       - opensearch-data:/usr/share/opensearch/data
     ports:
       - 9200:9200
-      - 9600:9600 # required for Performance Analyzer
+      - 9600:9600 # Performance Analyzer
     networks:
       - egov-network
   openlogstash:
     container_name: openlogstash
-    # 이미지는 Logstash OSS 버전 기준. 7.16.2 = 마지막 공식 태그, output 플러그인 2.0+ 로 OpenSearch 2.x 호환
+    # Logstash OSS 7.16.2 (opensearch output 플러그인 2.0+, OpenSearch 2.x 호환)
     image: opensearchproject/logstash-oss-with-opensearch-output-plugin:7.16.2
     restart: always
-    ports:
-      - "5001:5001"
     environment:
       LS_JAVA_OPTS: "-Xmx256m -Xms256m"
       TZ: Asia/Seoul
+      # logstash.conf 에서 참조
+      KAFKA_BOOTSTRAP_SERVERS: ${KAFKA_BOOTSTRAP_SERVERS:-192.168.100.60:9092}
+      OPENSEARCH_HOSTS: ${OPENSEARCH_HOSTS:-https://opensearch:9200}
+      OPENSEARCH_USER: ${OPENSEARCH_USER:-admin}
+      OPENSEARCH_PASSWORD: ${OPENSEARCH_INITIAL_ADMIN_PASSWORD:-Egov2015!}
     volumes:
       - type: bind
-        source: ${PWD}/logstash/config/logstash.yml
+        source: ./logstash/config/logstash.yml
         target: /usr/share/logstash/config/logstash.yml
         read_only: true
       - type: bind
-        source: ${PWD}/logstash/pipeline
+        source: ./logstash/pipeline
         target: /usr/share/logstash/pipeline
         read_only: true
     networks:

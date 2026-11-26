@@ -17,6 +17,9 @@ import org.thymeleaf.spring6.view.reactive.ThymeleafReactiveViewResolver;
 import org.thymeleaf.templatemode.TemplateMode;
 import org.thymeleaf.templateresolver.ITemplateResolver;
 
+/**
+ * WebFlux 설정 (메시지, Thymeleaf 뷰, 정적 리소스)
+ */
 @Configuration
 public class EgovWebConfig extends WebFluxConfigurationSupport {
 
@@ -28,7 +31,7 @@ public class EgovWebConfig extends WebFluxConfigurationSupport {
     }
 
     @Bean
-    MessageSource messageSource() {
+    public MessageSource messageSource() {
         ResourceBundleMessageSource messageSource = new ResourceBundleMessageSource();
         messageSource.setBasename("messages");
         messageSource.setDefaultEncoding("UTF-8");
@@ -37,12 +40,12 @@ public class EgovWebConfig extends WebFluxConfigurationSupport {
     }
 
     @Bean
-    MessageSourceAccessor messageSourceAccessor() {
+    public MessageSourceAccessor messageSourceAccessor() {
         return new MessageSourceAccessor(messageSource());
     }
 
     @Bean
-    ITemplateResolver thymeleafTemplateResolver() {
+    public ITemplateResolver thymeleafTemplateResolver() {
         final SpringResourceTemplateResolver resolver = new SpringResourceTemplateResolver();
         resolver.setApplicationContext(this.applicationContext);
         resolver.setPrefix("classpath:templates/thymeleaf/");
@@ -54,14 +57,14 @@ public class EgovWebConfig extends WebFluxConfigurationSupport {
     }
 
     @Bean
-    ISpringWebFluxTemplateEngine thymeleafTemplateEngine() {
+    public ISpringWebFluxTemplateEngine thymeleafTemplateEngine() {
         SpringWebFluxTemplateEngine templateEngine = new SpringWebFluxTemplateEngine();
         templateEngine.setTemplateResolver(thymeleafTemplateResolver());
         return templateEngine;
     }
 
     @Bean
-    ThymeleafReactiveViewResolver thymeleafReactiveViewResolver() {
+    public ThymeleafReactiveViewResolver thymeleafReactiveViewResolver() {
         ThymeleafReactiveViewResolver viewResolver = new ThymeleafReactiveViewResolver();
         viewResolver.setTemplateEngine(thymeleafTemplateEngine());
         return viewResolver;
@@ -81,13 +84,5 @@ public class EgovWebConfig extends WebFluxConfigurationSupport {
                 .addResourceLocations("classpath:/META-INF/resources/webjars/")
                 .resourceChain(false);
     }
-/*
-    @Bean
-    public LocalValidatorFactoryBean getValidator() {
-        LocalValidatorFactoryBean factoryBean = new LocalValidatorFactoryBean();
-        factoryBean.setValidationMessageSource(messageSource());
-        return factoryBean;
-    }
-*/
 
 }

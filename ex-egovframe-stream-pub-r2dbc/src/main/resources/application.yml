@@ -1,90 +1,79 @@
+# 접속 정보는 환경 변수로 재정의 (${변수:기본값}, 목록은 README 참고)
 server:
-    port: 9001
+  port: ${SERVER_PORT:9001}
 
 spring:
   rabbitmq:
-    host: 192.168.100.60
-    port: 5672
-    username: guest
-    password: guest
-    virtual-host: egov
+    host: ${RABBITMQ_HOST:192.168.100.60}
+    port: ${RABBITMQ_PORT:5672}
+    username: ${RABBITMQ_USERNAME:guest}
+    password: ${RABBITMQ_PASSWORD:guest}
+    virtual-host: ${RABBITMQ_VHOST:egov}
 
   cloud:
+    # 바인딩 대상 함수 (기본 송신 테스트 시 basicProducer 추가)
+    function:
+      definition: lineFileProducer;trainApiProducer
+
     stream:
+      # Supplier 기본 호출 주기(ms)
+      poller:
+        fixed-delay: 1000
+
       kafka:
         binder:
           autoCreateTopics: true
           autoAddPartitions: false
-          # Apache Kafka 4.x KRaft 모드에서는 Zookeeper 미사용
-          #zkNodes: 192.168.100.60
-          brokers: 192.168.100.60
-          # Kafka 클라이언트 텔레메트리 비활성화 (브로커에 메트릭 전송 안 함)
+          brokers: ${KAFKA_BOOTSTRAP_SERVERS:192.168.100.60:9092}
+          # 클라이언트 텔레메트리 전송 비활성화
           configuration:
             enable.metrics.push: false
 
       bindings:
-#        output:
-#          destination: sample-topic
-#        input:
-#          destination: sample-topic
-
         basicProducer-out-0:
           destination: test-topic
           binder: kafka
-#        basicConsumer-in-0:
-#          destination: test-topic
-#          binder: kafka
 
+        # 파일 라인 발행
         lineFileProducer-out-0:
           destination: line-topic
           binder: kafka
 
+        # Open API(지하철 실시간 위치) 발행, 5초 주기
         trainApiProducer-out-0:
           destination: api-topic
           binder: kafka
           producer:
             poller:
-              fixed-delay: 5000  # 5초마다 호출 (밀리초 단위)
+              fixed-delay: 5000
 
-#        fileInfo-out-0:
-#          destination: sample-topic
-#          binder: kafka
-
+        # DB 처리 이력 발행 (StreamBridge)
         historyDb:
           destination: db-topic
           binder: kafka
 
-
-    # 테스트시 spring.cloud.function.definition = basicProducer; 추가 
-    function:
-      definition: lineFileProducer; trainApiProducer;
-      
-      # Supplier를 주기적으로 호출하기 위한 poller 설정
-      poller:
-        fixed-delay: 1000  # 1초마다 호출 (밀리초 단위)
-
-feign:
-  client:
-    config:
-      default: # @FeignClient 에서 name 값, 전역으로 설정하려면 default
-        connectTimeout: 5000
-        readTimeout: 2000
-        loggerLevel: FULL
-
+    # OpenFeign 전역 설정 (클라이언트별 설정은 default 대신 @FeignClient name 사용)
+    openfeign:
+      client:
+        config:
+          default:
+            connect-timeout: 5000
+            read-timeout: 2000
+            logger-level: full
 
 logging:
-    level:
-        '[org.egovframe]': DEBUG
-        egovframework: debug
-        org:
-            springframework:
-                r2dbc:
-                    core:
-                        DefaultDatabaseClient: debug
-                cloud:
-                    stream: DEBUG
-        '[org.springframework.cloud.stream]': DEBUG
-        '[org.springframework.integration]': DEBUG
+  level:
+    egovframework: DEBUG
+    '[org.egovframe]': DEBUG
+    '[org.springframework.r2dbc.core.DefaultDatabaseClient]': DEBUG
 
 egov:
-  lineFilePath: /Volumes/EXSSD/EGOVSTREAM/ex-CloudDataStream/ex-egovframe-stream-pub-r2dbc/src/main/resources/file/txtData2.csv
+  # 발행 대상 파일 (절대경로 또는 실행 위치 기준 상대경로)
+  lineFilePath: ${LINE_FILE_PATH:src/main/resources/file/txtData2.csv}
+  trainApi:
+    url: ${TRAIN_API_URL:http://swopenAPI.seoul.go.kr}
+    # 서울 열린데이터광장 인증키 (sample : 최대 5건 조회)
+    authKey: ${TRAIN_API_KEY:sample}
+    lineNumber: ${TRAIN_API_LINE:1}
+  h2Console:
+    port: ${H2_CONSOLE_PORT:9995}
