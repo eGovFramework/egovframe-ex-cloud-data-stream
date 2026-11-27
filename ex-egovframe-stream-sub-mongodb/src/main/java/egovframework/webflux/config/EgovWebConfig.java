@@ -2,6 +2,7 @@ package egovframework.webflux.config;
 
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -10,9 +11,10 @@ import org.springframework.context.support.ResourceBundleMessageSource;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpHeaders;
+import org.springframework.web.reactive.config.EnableWebFlux;
 import org.springframework.web.reactive.config.ResourceHandlerRegistry;
 import org.springframework.web.reactive.config.ViewResolverRegistry;
-import org.springframework.web.reactive.config.WebFluxConfigurationSupport;
+import org.springframework.web.reactive.config.WebFluxConfigurer;
 import org.springframework.web.server.WebFilter;
 import org.thymeleaf.spring6.ISpringWebFluxTemplateEngine;
 import org.thymeleaf.spring6.SpringWebFluxTemplateEngine;
@@ -23,9 +25,13 @@ import org.thymeleaf.templateresolver.ITemplateResolver;
 
 /**
  * WebFlux 설정 (메시지, Thymeleaf 뷰, 정적 리소스)
+ * <p>
+ * WebFluxConfigurationSupport 를 직접 상속하면 다른 WebFluxConfigurer(springdoc Swagger UI 리소스 핸들러 등)가
+ * 적용되지 않으므로 @EnableWebFlux 와 WebFluxConfigurer 로 구성한다.
  */
 @Configuration
-public class EgovWebConfig extends WebFluxConfigurationSupport {
+@EnableWebFlux
+public class EgovWebConfig implements WebFluxConfigurer, ApplicationContextAware {
 
     private ApplicationContext applicationContext;
 
