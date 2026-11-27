@@ -322,9 +322,9 @@ environment:
 ---
 
 ## 위키 가이드 문서
-- [Cloud Data Stream 환경설정](https://www.egovframe.go.kr/wiki/doku.php?id=egovframework:rte2:rex:clouddatastream)
-- [Data Stream Publish 예제](https://www.egovframe.go.kr/wiki/doku.php?id=egovframework:rte4:rex:publish_data_stream)
-- [Data Stream Subscribe 예제](https://www.egovframe.go.kr/wiki/doku.php?id=egovframework:rte4:rex:subscribe_data_stream)
+- [Cloud Data Stream 환경설정](https://egovframe.go.kr/docs/5.0/egovframe-runtime/integration-layer/webservice/cloud-data-stream/)
+- [Data Stream Publish 예제](https://egovframe.go.kr/docs/archive/egovframework/%EC%8B%A4%ED%96%89%ED%99%98%EA%B2%BD/rte4/rex/publish_data_stream.html)
+- [Data Stream Subscribe 예제](https://egovframe.go.kr/docs/archive/egovframework/%EC%8B%A4%ED%96%89%ED%99%98%EA%B2%BD/rte4/rex/subscribe_data_stream.html)
 
 ## 참고 문서
 
